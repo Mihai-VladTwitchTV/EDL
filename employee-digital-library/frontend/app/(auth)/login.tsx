@@ -24,10 +24,9 @@ export default function LoginScreen() {
     try {
       await login(email.trim().toLowerCase(), password);
     } catch (err: any) {
-      showMessage({
-        message: err.response?.data?.message ?? 'Login failed',
-        type: 'danger',
-      });
+      const msg = err.response?.data?.message
+        ?? (err.request ? 'Cannot reach server — check your network or BASE_URL in api/index.ts' : err.message ?? 'Login failed');
+      showMessage({ message: msg, type: 'danger' });
     } finally {
       setLoading(false);
     }

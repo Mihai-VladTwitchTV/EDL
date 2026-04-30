@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, FontSize } from '../../src/utils/theme';
 import { notifApi } from '../../src/api';
 import { useAuthStore } from '../../src/store/authStore';
@@ -25,6 +26,7 @@ function TabIcon({ name, color, size, badge }: {
 export default function TabsLayout() {
   const [unread, setUnread] = useState(0);
   const user = useAuthStore(s => s.user);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const fetchUnread = () => {
@@ -41,7 +43,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [styles.tabBar, { height: 60 + insets.bottom, paddingBottom: 8 + insets.bottom }],
         tabBarActiveTintColor: Colors.primary,
         tabBarInactiveTintColor: Colors.textMuted,
         tabBarLabelStyle: styles.tabLabel,
@@ -107,8 +109,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderTopColor: Colors.border,
     borderTopWidth: 1,
-    height: 60,
-    paddingBottom: 8,
   },
   tabLabel: {
     fontSize: FontSize.xs,

@@ -35,7 +35,9 @@ export default function RegisterScreen() {
     try {
       await register({ fullName: fullName.trim(), email: email.trim().toLowerCase(), password, departmentId: deptId || undefined, preferredLang: lang });
     } catch (err: any) {
-      showMessage({ message: err.response?.data?.message ?? 'Registration failed', type: 'danger' });
+      const msg = err.response?.data?.message
+        ?? (err.request ? 'Cannot reach server — check your network or BASE_URL in api/index.ts' : err.message ?? 'Registration failed');
+      showMessage({ message: msg, type: 'danger' });
     } finally {
       setLoading(false);
     }

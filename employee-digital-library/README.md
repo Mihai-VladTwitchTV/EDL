@@ -102,6 +102,7 @@ Swagger UI: `http://localhost:8080/swagger-ui.html`
 
 ```bash
 cd frontend
+cp .env.example .env          # then edit .env with your machine's local IP
 npm install
 npx expo start
 ```
@@ -110,7 +111,7 @@ npx expo start
 - Press `i` → iOS simulator
 - Scan QR code → Expo Go on your phone
 
-> ⚠️ **Physical device:** Edit `frontend/src/api/index.ts` and change `BASE_URL` to your machine's local network IP, e.g. `http://192.168.1.100:8080`. The default `10.0.2.2` only works on Android emulators.
+> ⚠️ **Physical device:** Set `EXPO_PUBLIC_API_URL` in `frontend/.env` to your machine's local network IP, e.g. `http://192.168.1.100:8080`. The default `10.0.2.2` only works on Android emulators.
 
 ---
 
@@ -141,6 +142,28 @@ All endpoints require `Authorization: Bearer <token>` except auth routes.
 | POST | `/api/notifications/mark-all-read` | Mark all read | All |
 | GET | `/api/departments` | List departments | Public |
 | GET | `/api/categories` | List categories | Public |
+
+---
+
+## 🧪 Mock Accounts & Seed Data
+
+Run `db/seed.sql` once after the database is up to load mock content and test accounts:
+
+```bash
+docker exec -i edl_postgres psql -U edl_user -d employee_digital_library < db/seed.sql
+```
+
+Safe to re-run — all inserts use `ON CONFLICT DO NOTHING`.
+
+### Mock accounts
+
+| Role | Email | Password |
+|------|-------|----------|
+| `HR_ADMIN` | `admin@mail.com` | `admin123` |
+| `MASTER_MENTOR` | `mentor@mail.com` | `mentor123` |
+| `EMPLOYEE` | `user@mail.com` | `user123` |
+
+The seed also creates 5 published content items (2 mandatory documents, 2 videos, 1 quiz) spread across departments, plus a sample content request.
 
 ---
 
