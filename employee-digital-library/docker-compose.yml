@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: edl_postgres
+    environment:
+      POSTGRES_DB: employee_digital_library
+      POSTGRES_USER: edl_user
+      POSTGRES_PASSWORD: edl_password
+    ports:
+      - "5433:5432"   # Using 5433 externally to avoid conflict with your existing Postgres on 5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U edl_user -d employee_digital_library"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: edl_backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/employee_digital_library
+      SPRING_DATASOURCE_USERNAME: edl_user
+      SPRING_DATASOURCE_PASSWORD: edl_password
+      SPRING_PROFILES_ACTIVE: docker
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production-min-256-bits
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads:/app/uploads
+
+volumes:
+  pgdata:
+  uploads:

@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: employee-digital-library
+  datasource:
+    url: jdbc:postgresql://localhost:5433/employee_digital_library
+    username: edl_user
+    password: edl_password
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+  jpa:
+    hibernate:
+      ddl-auto: validate      # Schema managed by init.sql; never let Hibernate drop/create
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 500MB
+      max-request-size: 500MB
+
+server:
+  port: 8080
+
+# JWT config
+jwt:
+  secret: your-super-secret-jwt-key-change-in-production-min-256-bits
+  expiration-ms: 86400000        # 24 hours
+  refresh-expiration-ms: 604800000  # 7 days
+
+# File upload storage
+storage:
+  upload-dir: ./uploads
+
+# OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.edl: DEBUG
+    org.springframework.security: INFO
+
+---
+# Docker profile (overrides local settings inside container)
+spring:
+  config:
+    activate:
+      on-profile: docker
+  datasource:
+    url: jdbc:postgresql://postgres:5432/employee_digital_library
