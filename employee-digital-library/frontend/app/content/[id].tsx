@@ -33,7 +33,7 @@ function VideoView({ item, onProgress }: { item: any; onProgress: (pct: number) 
       </View>
       {item.subtitleUrl && (
         <View style={styles.subtitleBadge}>
-          <Ionicons name="closed-captioning-outline" size={14} color={Colors.secondary} />
+          <Ionicons name="text-outline" size={14} color={Colors.secondary} />
           <Text style={styles.subtitleText}>Subtitles available</Text>
         </View>
       )}

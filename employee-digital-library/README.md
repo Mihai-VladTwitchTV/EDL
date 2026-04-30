@@ -44,9 +44,11 @@ employee-digital-library/
 
 ### Prerequisites
 - Docker & Docker Compose
-- Java 21 + Maven (or just use the Dockerfile)
+- **JDK 21** (`openjdk-21-jdk`) + Maven — the JRE alone is not enough, the compiler requires the full JDK
+  - Ubuntu/Debian: `sudo apt install openjdk-21-jdk`
+  - macOS (Homebrew): `brew install openjdk@21`
 - Node.js 18+ and npm
-- Expo Go app on your phone (or an emulator)
+- Expo Go app on your phone (SDK 54) or an emulator
 
 ---
 
@@ -57,7 +59,7 @@ This project's Postgres runs on port **5433**.
 
 ```bash
 cd employee-digital-library
-docker-compose up postgres -d
+docker compose up postgres -d
 ```
 
 Wait for the health check to pass (about 10 seconds).
@@ -74,20 +76,20 @@ The `db/init.sql` runs automatically on first start, creating all tables and see
 **Option A — Maven directly (fastest for development):**
 ```bash
 cd backend
-./mvnw spring-boot:run
+mvn spring-boot:run
 ```
 The app connects to `localhost:5433` by default.
 
 **Option B — Full Docker:**
 ```bash
 cd employee-digital-library
-docker-compose up backend -d
+docker compose up backend -d
 ```
 
 **Option C — Build JAR and run:**
 ```bash
 cd backend
-./mvnw package -DskipTests
+mvn package -DskipTests
 java -jar target/employee-digital-library-1.0.0-SNAPSHOT.jar
 ```
 

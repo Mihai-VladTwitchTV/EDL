@@ -235,12 +235,10 @@ CREATE TABLE user_certifications (
     user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     certification_id UUID NOT NULL REFERENCES certifications(id) ON DELETE CASCADE,
     issued_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    expires_at      TIMESTAMPTZ,
-    is_valid        BOOLEAN GENERATED ALWAYS AS (expires_at IS NULL OR expires_at > NOW()) STORED
+    expires_at      TIMESTAMPTZ
 );
 
 CREATE INDEX idx_user_certs_user ON user_certifications(user_id);
-CREATE INDEX idx_user_certs_valid ON user_certifications(is_valid);
 
 -- ============================================================
 -- NOTIFICATIONS
