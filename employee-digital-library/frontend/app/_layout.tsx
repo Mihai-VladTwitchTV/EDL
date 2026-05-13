@@ -3,21 +3,9 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import FlashMessage from 'react-native-flash-message';
-import * as Notifications from 'expo-notifications';
 import { useAuthStore } from '../src/store/authStore';
-import { notifApi } from '../src/api';
 import { View, ActivityIndicator } from 'react-native';
 import { Colors } from '../src/utils/theme';
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: false,
-    shouldSetBadge: true,
-  }),
-});
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,21 +31,6 @@ function AuthGuard() {
       router.replace('/(tabs)/feed');
     }
   }, [user, isLoading, segments]);
-
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      try {
-        const { status } = await Notifications.requestPermissionsAsync();
-        if (status === 'granted') {
-          const { data: expoPushToken } = await Notifications.getExpoPushTokenAsync();
-          await notifApi.registerToken(expoPushToken);
-        }
-      } catch {
-        // push notifications not supported on this device/simulator
-      }
-    })();
-  }, [user?.id]);
 
   if (isLoading) {
     return (
