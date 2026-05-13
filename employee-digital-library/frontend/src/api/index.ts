@@ -24,7 +24,6 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       await SecureStore.deleteItemAsync('access_token');
-      // Navigation reset is handled by the auth store
     }
     return Promise.reject(error);
   }
@@ -42,8 +41,8 @@ export const authApi = {
 
 // ----- Feed -----
 export const feedApi = {
-  getFeed: (page = 0, size = 20) =>
-    api.get('/api/feed', { params: { page, size } }),
+  getFeed: (page = 0, size = 20, postType?: string) =>
+    api.get('/api/feed', { params: { page, size, ...(postType ? { postType } : {}) } }),
   getMandatoryPending: () =>
     api.get('/api/feed/mandatory-pending'),
 };
@@ -74,4 +73,58 @@ export const notifApi = {
     api.get('/api/notifications/unread-count'),
   markAllRead: () =>
     api.post('/api/notifications/mark-all-read'),
+};
+
+// ----- Quiz -----
+export const quizApi = {
+  getQuestions: (contentId: string) =>
+    api.get(`/api/quiz/${contentId}/questions`),
+  submitAttempt: (contentId: string, answers: { questionId: string; selectedAnswerIds: string[] }[]) =>
+    api.post(`/api/quiz/${contentId}/attempt`, { answers }),
+  getAttemptHistory: (contentId: string) =>
+    api.get(`/api/quiz/${contentId}/attempts`),
+};
+
+// ----- Gamification -----
+export const gamificationApi = {
+  getMyProfile: () =>
+    api.get('/api/gamification/me'),
+  getSectionLeaderboard: (sectionId: string) =>
+    api.get(`/api/gamification/leaderboard/section/${sectionId}`),
+};
+
+// ----- Certifications -----
+export const certApi = {
+  getMyCertifications: () =>
+    api.get('/api/certifications/me'),
+};
+
+// ----- Feedback -----
+export const feedbackApi = {
+  submit: (data: { category: string; message: string; anonymous?: boolean }) =>
+    api.post('/api/feedback', data),
+};
+
+// ----- Support -----
+export const supportApi = {
+  create: (data: { ticketType: string; subject: string; description: string }) =>
+    api.post('/api/support', data),
+  getMyTickets: (page = 0) =>
+    api.get('/api/support/me', { params: { page } }),
+};
+
+// ----- Company Pages -----
+export const pagesApi = {
+  getBySection: (section: string) =>
+    api.get('/api/pages', { params: { section } }),
+  getBySlug: (slug: string) =>
+    api.get(`/api/pages/${slug}`),
+};
+
+// ----- Meta -----
+export const metaApi = {
+  getDepartments: () => api.get('/api/departments'),
+  getCategories: () => api.get('/api/categories'),
+  getSections: (departmentId?: string) =>
+    api.get('/api/sections', { params: departmentId ? { departmentId } : {} }),
 };
