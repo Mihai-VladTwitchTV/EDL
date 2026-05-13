@@ -18,6 +18,12 @@ public class CompanyPageService {
     private final CompanyPageRepository pageRepo;
 
     @Transactional(readOnly = true)
+    public List<CompanyPageResponse> getAll() {
+        return pageRepo.findByPublishedTrueOrderBySectionAscDisplayOrderAsc()
+            .stream().map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<CompanyPageResponse> getBySection(String section) {
         return pageRepo.findBySectionAndPublishedTrueOrderByDisplayOrderAsc(section)
             .stream().map(this::toResponse).toList();

@@ -16,10 +16,11 @@ public class CompanyPageController {
     private final CompanyPageService companyPageService;
 
     @GetMapping
-    public ResponseEntity<List<CompanyPageResponse>> getBySection(
-        @RequestParam String section
+    public ResponseEntity<List<CompanyPageResponse>> getPages(
+        @RequestParam(required = false) String section
     ) {
-        return ResponseEntity.ok(companyPageService.getBySection(section));
+        if (section != null) return ResponseEntity.ok(companyPageService.getBySection(section));
+        return ResponseEntity.ok(companyPageService.getAll());
     }
 
     @GetMapping("/{slug}")

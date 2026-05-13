@@ -115,6 +115,8 @@ export const supportApi = {
 
 // ----- Company Pages -----
 export const pagesApi = {
+  getAll: () =>
+    api.get('/api/pages'),
   getBySection: (section: string) =>
     api.get('/api/pages', { params: { section } }),
   getBySlug: (slug: string) =>

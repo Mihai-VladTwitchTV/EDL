@@ -221,6 +221,20 @@ export default function ProfileScreen() {
         </View>
       </View>
 
+      {/* Help & Info */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Help &amp; Info</Text>
+        <View style={styles.card}>
+          <Row icon="document-text-outline" label="Regulations" onPress={() => router.push('/regulations')} />
+          <View style={styles.divider} />
+          <Row icon="business-outline" label="About &amp; Policies" onPress={() => router.push('/about')} />
+          <View style={styles.divider} />
+          <Row icon="chatbubbles-outline" label="Send Feedback" onPress={() => router.push('/feedback')} />
+          <View style={styles.divider} />
+          <Row icon="headset-outline" label="Support" onPress={() => router.push('/support')} />
+        </View>
+      </View>
+
       {/* App */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>App</Text>

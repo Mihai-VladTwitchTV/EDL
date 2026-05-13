@@ -11,5 +11,6 @@ import java.util.UUID;
 @Repository
 public interface CompanyPageRepository extends JpaRepository<CompanyPage, UUID> {
     List<CompanyPage> findBySectionAndPublishedTrueOrderByDisplayOrderAsc(String section);
+    List<CompanyPage> findByPublishedTrueOrderBySectionAscDisplayOrderAsc();
     Optional<CompanyPage> findBySlug(String slug);
 }
