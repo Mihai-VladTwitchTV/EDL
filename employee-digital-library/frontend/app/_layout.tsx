@@ -52,6 +52,7 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="content/[id]" options={{ presentation: 'card', headerShown: true, headerStyle: { backgroundColor: Colors.surface }, headerTintColor: Colors.textPrimary }} />
+        <Stack.Screen name="leaderboard" options={{ presentation: 'card', headerShown: true, title: 'Section Leaderboard', headerStyle: { backgroundColor: Colors.surface }, headerTintColor: Colors.textPrimary }} />
       </Stack>
       <FlashMessage position="top" />
     </QueryClientProvider>
