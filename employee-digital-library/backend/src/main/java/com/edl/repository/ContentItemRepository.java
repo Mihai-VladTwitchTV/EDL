@@ -2,6 +2,7 @@ package com.edl.repository;
 
 import com.edl.entity.ContentItem;
 import com.edl.entity.ContentItem.ContentStatus;
+import com.edl.entity.ContentItem.PostType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -108,6 +109,31 @@ public interface ContentItemRepository extends JpaRepository<ContentItem, UUID> 
     @Modifying
     @Query("UPDATE ContentItem c SET c.viewCount = c.viewCount + 1 WHERE c.id = :id")
     void incrementViewCount(@Param("id") UUID id);
+
+    // -------------------------------------------------------
+    // FEED WITH POST TYPE FILTER
+    // -------------------------------------------------------
+    @Query("""
+        SELECT DISTINCT c FROM ContentItem c
+        LEFT JOIN c.targetDepartments d
+        WHERE c.status = 'PUBLISHED'
+          AND c.postType = :postType
+          AND (d.id = :deptId OR c.targetDepartments IS EMPTY)
+        ORDER BY c.mandatory DESC, c.createdAt DESC
+        """)
+    Page<ContentItem> findFeedForDepartmentByPostType(
+        @Param("deptId") UUID departmentId,
+        @Param("postType") PostType postType,
+        Pageable pageable
+    );
+
+    @Query("""
+        SELECT c FROM ContentItem c
+        WHERE c.status = 'PUBLISHED'
+          AND c.postType = :postType
+        ORDER BY c.mandatory DESC, c.createdAt DESC
+        """)
+    Page<ContentItem> findFeedAllByPostType(@Param("postType") PostType postType, Pageable pageable);
 
     // -------------------------------------------------------
     // CATEGORY FILTER

@@ -5,6 +5,7 @@ import com.edl.dto.response.Responses.PagedResponse;
 import com.edl.entity.*;
 import com.edl.entity.ContentItem.ContentStatus;
 import com.edl.entity.ContentItem.ContentType;
+import com.edl.entity.ContentItem.PostType;
 import com.edl.exception.ApiException;
 import com.edl.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class ContentService {
     private final CategoryRepository categoryRepo;
     private final DepartmentRepository deptRepo;
     private final NotificationService notificationService;
+    private final GamificationService gamificationService;
 
     @Value("${storage.upload-dir:./uploads}")
     private String uploadDir;
@@ -44,12 +46,18 @@ public class ContentService {
     // -------------------------------------------------------
 
     @Transactional(readOnly = true)
-    public PagedResponse<ContentCardResponse> getFeed(User user, Pageable pageable) {
+    public PagedResponse<ContentCardResponse> getFeed(User user, Pageable pageable, String postTypeStr) {
+        PostType postType = postTypeStr != null ? PostType.valueOf(postTypeStr.toUpperCase()) : null;
         Page<ContentItem> page;
-        if (user.getDepartment() != null) {
-            page = contentRepo.findFeedForDepartment(user.getDepartment().getId(), pageable);
+        UUID deptId = user.getDepartment() != null ? user.getDepartment().getId() : null;
+        if (postType != null) {
+            page = deptId != null
+                ? contentRepo.findFeedForDepartmentByPostType(deptId, postType, pageable)
+                : contentRepo.findFeedAllByPostType(postType, pageable);
         } else {
-            page = contentRepo.findFeedAll(pageable);
+            page = deptId != null
+                ? contentRepo.findFeedForDepartment(deptId, pageable)
+                : contentRepo.findFeedAll(pageable);
         }
         return toPagedResponse(page, user);
     }
@@ -100,8 +108,13 @@ public class ContentService {
             .orElseThrow(() -> new ApiException("Content not found", HttpStatus.NOT_FOUND));
         contentRepo.incrementViewCount(id);
         UserContentProgress progress = getOrCreateProgress(user, item);
+        boolean firstView = progress.getId() == null;
         progress.setLastAccessedAt(OffsetDateTime.now());
         progressRepo.save(progress);
+        if (firstView) {
+            gamificationService.awardXp(user, "CONTENT_VIEWED", GamificationService.XP_CONTENT_VIEWED, item);
+            gamificationService.updateStreak(user);
+        }
         return toCard(item, progress);
     }
 
@@ -118,6 +131,9 @@ public class ContentService {
             p.setAcknowledged(true);
             p.setAcknowledgedAt(OffsetDateTime.now());
             progressRepo.save(p);
+            if (item.isMandatory()) {
+                gamificationService.awardXp(user, "MANDATORY_ACKNOWLEDGED", GamificationService.XP_MANDATORY_ACK, item);
+            }
         }
     }
 
@@ -131,6 +147,7 @@ public class ContentService {
             p.setCompletedAt(OffsetDateTime.now());
             p.setProgressPct((short) 100);
             progressRepo.save(p);
+            gamificationService.awardXp(user, "CONTENT_COMPLETED", GamificationService.XP_CONTENT_COMPLETED, item);
         }
     }
 

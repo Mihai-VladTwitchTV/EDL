@@ -147,13 +147,17 @@ All endpoints require `Authorization: Bearer <token>` except auth routes.
 
 ## 🧪 Mock Accounts & Seed Data
 
-Run `db/seed.sql` once after the database is up to load mock content and test accounts:
+Run the seeds **in order** after the database is up:
 
 ```bash
+# Base seed — mock accounts + 5 Training content items
 docker exec -i edl_postgres psql -U edl_user -d employee_digital_library < db/seed.sql
+
+# Post-type seed — NEWS, EVENT, CHANGE, CAREER, REGULATION items
+docker exec -i edl_postgres psql -U edl_user -d employee_digital_library < db/003_posttype_seed.sql
 ```
 
-Safe to re-run — all inserts use `ON CONFLICT DO NOTHING`.
+Both scripts are idempotent — safe to re-run.
 
 ### Mock accounts
 
@@ -163,7 +167,7 @@ Safe to re-run — all inserts use `ON CONFLICT DO NOTHING`.
 | `MASTER_MENTOR` | `mentor@mail.com` | `mentor123` |
 | `EMPLOYEE` | `user@mail.com` | `user123` |
 
-The seed also creates 5 published content items (2 mandatory documents, 2 videos, 1 quiz) spread across departments, plus a sample content request.
+The seeds together create **15 published content items** across all 6 post types (TRAINING ×5, NEWS ×2, EVENT ×2, CHANGE ×2, CAREER ×2, REGULATION ×2) spread across departments, plus a sample content request and quiz with 3 questions.
 
 ---
 
