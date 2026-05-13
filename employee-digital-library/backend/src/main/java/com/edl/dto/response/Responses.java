@@ -1,7 +1,5 @@
 package com.edl.dto.response;
 
-import com.edl.entity.ContentItem;
-import com.edl.entity.User;
 import lombok.Builder;
 import lombok.Data;
 
@@ -25,8 +23,13 @@ public class Responses {
         private String role;
         private String department;
         private String departmentId;
+        private String sectionId;
+        private String sectionName;
         private String avatarUrl;
         private String preferredLang;
+        private int xpPoints;
+        private int level;
+        private int streakDays;
     }
 
     @Data @Builder
@@ -35,6 +38,7 @@ public class Responses {
         private String title;
         private String description;
         private String contentType;
+        private String postType;
         private boolean mandatory;
         private String categoryName;
         private String categoryIconName;
@@ -43,6 +47,12 @@ public class Responses {
         private String authorName;
         private int viewCount;
         private OffsetDateTime createdAt;
+        private OffsetDateTime eventDate;
+        private String eventLocation;
+        private String jobDepartment;
+        private String jobLocation;
+        private String applicationUrl;
+        private UUID linkedQuizId;
         private Boolean userAcknowledged;
         private Boolean userCompleted;
         private Short userProgressPct;
