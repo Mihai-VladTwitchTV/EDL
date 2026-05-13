@@ -79,6 +79,8 @@ export const notifApi = {
     api.get('/api/notifications/unread-count'),
   markAllRead: () =>
     api.post('/api/notifications/mark-all-read'),
+  registerToken: (token: string) =>
+    api.post('/api/notifications/register-token', { token }),
 };
 
 // ----- Quiz -----

@@ -8,6 +8,8 @@ import com.edl.entity.*;
 import com.edl.entity.ContentItem.ContentStatus;
 import com.edl.entity.ContentItem.ContentType;
 import com.edl.entity.ContentItem.PostType;
+import com.edl.entity.ContentDocument;
+import com.edl.entity.ContentVideo;
 import com.edl.exception.ApiException;
 import com.edl.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +39,8 @@ public class ContentService {
     private final UserContentProgressRepository progressRepo;
     private final CategoryRepository categoryRepo;
     private final DepartmentRepository deptRepo;
+    private final ContentDocumentRepository docRepo;
+    private final ContentVideoRepository videoRepo;
     private final NotificationService notificationService;
     private final GamificationService gamificationService;
 
@@ -117,7 +121,14 @@ public class ContentService {
             gamificationService.awardXp(user, "CONTENT_VIEWED", GamificationService.XP_CONTENT_VIEWED, item);
             gamificationService.updateStreak(user);
         }
-        return toCard(item, progress);
+        String bodyHtml = null;
+        String videoUrl = null;
+        if (item.getContentType() == ContentType.DOCUMENT) {
+            bodyHtml = docRepo.findByContent_Id(id).map(ContentDocument::getBodyHtml).orElse(null);
+        } else if (item.getContentType() == ContentType.VIDEO) {
+            videoUrl = videoRepo.findByContent_Id(id).map(ContentVideo::getVideoUrl).orElse(null);
+        }
+        return toCard(item, progress, bodyHtml, videoUrl);
     }
 
     // -------------------------------------------------------
@@ -175,7 +186,7 @@ public class ContentService {
         User author, String title, String description,
         String contentTypeStr, String postTypeStr, String languageStr, boolean mandatory,
         String categoryId, List<String> departmentIds,
-        MultipartFile file
+        MultipartFile file, String body, String videoUrl
     ) {
         ContentType type = ContentType.valueOf(contentTypeStr.toUpperCase());
         PostType postType = postTypeStr != null
@@ -212,6 +223,14 @@ public class ContentService {
         }
 
         contentRepo.save(item);
+
+        if (type == ContentType.DOCUMENT && body != null && !body.isBlank()) {
+            docRepo.save(ContentDocument.builder().content(item).bodyHtml(body).build());
+        }
+        if (type == ContentType.VIDEO && videoUrl != null && !videoUrl.isBlank()) {
+            videoRepo.save(ContentVideo.builder().content(item).videoUrl(videoUrl).build());
+        }
+
         return toCard(item, null);
     }
 
@@ -300,6 +319,11 @@ public class ContentService {
     }
 
     public static ContentCardResponse toCard(ContentItem item, UserContentProgress progress) {
+        return toCard(item, progress, null, null);
+    }
+
+    public static ContentCardResponse toCard(ContentItem item, UserContentProgress progress,
+                                             String bodyHtml, String videoUrl) {
         return ContentCardResponse.builder()
             .id(item.getId())
             .title(item.getTitle())
@@ -323,6 +347,8 @@ public class ContentService {
             .userAcknowledged(progress != null ? progress.isAcknowledged() : null)
             .userCompleted(progress != null ? progress.isCompleted() : null)
             .userProgressPct(progress != null ? progress.getProgressPct() : null)
+            .bodyHtml(bodyHtml)
+            .videoUrl(videoUrl)
             .build();
     }
 

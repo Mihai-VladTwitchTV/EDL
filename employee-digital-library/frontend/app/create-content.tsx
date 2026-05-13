@@ -36,6 +36,8 @@ export default function CreateContentScreen() {
 
   const [title, setTitle]               = useState('');
   const [description, setDescription]   = useState('');
+  const [body, setBody]                 = useState('');
+  const [videoUrl, setVideoUrl]         = useState('');
   const [postType, setPostType]         = useState('TRAINING');
   const [contentType, setContentType]   = useState('DOCUMENT');
   const [language, setLanguage]         = useState('EN');
@@ -65,6 +67,8 @@ export default function CreateContentScreen() {
       form.append('mandatory', String(mandatory));
       if (categoryId) form.append('categoryId', categoryId);
       selectedDepts.forEach(id => form.append('departmentIds', id));
+      if (contentType === 'DOCUMENT' && body.trim()) form.append('body', body.trim());
+      if (contentType === 'VIDEO' && videoUrl.trim()) form.append('videoUrl', videoUrl.trim());
 
       const res = await contentApi.create(form);
       const created = res.data as { id: string };
@@ -168,6 +172,38 @@ export default function CreateContentScreen() {
           );
         })}
       </View>
+
+      {/* Body — DOCUMENT only */}
+      {contentType === 'DOCUMENT' && (
+        <>
+          <Text style={styles.label}>Content Body <Text style={styles.optional}>(optional)</Text></Text>
+          <TextInput
+            style={[styles.input, styles.bodyArea]}
+            value={body}
+            onChangeText={setBody}
+            placeholder="Write the full document body here..."
+            placeholderTextColor={Colors.textMuted}
+            multiline
+            textAlignVertical="top"
+          />
+        </>
+      )}
+
+      {/* Video URL — VIDEO only */}
+      {contentType === 'VIDEO' && (
+        <>
+          <Text style={styles.label}>Video URL <Text style={styles.optional}>(optional)</Text></Text>
+          <TextInput
+            style={styles.input}
+            value={videoUrl}
+            onChangeText={setVideoUrl}
+            placeholder="https://example.com/video.mp4"
+            placeholderTextColor={Colors.textMuted}
+            keyboardType="url"
+            autoCapitalize="none"
+          />
+        </>
+      )}
 
       {/* Language */}
       <Text style={styles.label}>Language</Text>
@@ -326,7 +362,8 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: Colors.border,
     color: Colors.textPrimary, fontSize: FontSize.md, padding: Spacing.md,
   },
-  textArea: { minHeight: 100 },
+  textArea:  { minHeight: 100 },
+  bodyArea:  { minHeight: 180 },
 
   chipGrid:     { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
   chipRow:      { flexDirection: 'row', gap: Spacing.sm },

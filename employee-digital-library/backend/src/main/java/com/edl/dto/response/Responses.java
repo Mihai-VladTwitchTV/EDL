@@ -57,6 +57,8 @@ public class Responses {
         private Boolean userAcknowledged;
         private Boolean userCompleted;
         private Short userProgressPct;
+        private String bodyHtml;
+        private String videoUrl;
     }
 
     @Data @Builder

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, Linking,
@@ -6,11 +6,17 @@ import {
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
+import { Video, ResizeMode } from 'expo-av';
 import { showMessage } from 'react-native-flash-message';
 import { contentApi, quizApi } from '../../src/api';
+import { BASE_URL } from '../../src/api';
 import { Colors, Spacing, Radius, FontSize } from '../../src/utils/theme';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function stripHtml(html: string) {
+  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+}
 
 function formatDate(iso?: string) {
   if (!iso) return '';
@@ -56,9 +62,12 @@ const POST_TYPE_LABEL: Record<string, string> = {
 
 // ─── DOCUMENT / REGULATION VIEW ───────────────────────────────────────────────
 function DocumentView({ item }: { item: any }) {
+  const bodyText = item.bodyHtml
+    ? stripHtml(item.bodyHtml)
+    : (item.description ?? 'No content available.');
   return (
     <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-      <Text style={styles.bodyText}>{item.description ?? 'No content available.'}</Text>
+      <Text style={styles.bodyText}>{bodyText}</Text>
       <View style={{ height: 120 }} />
     </ScrollView>
   );
@@ -66,14 +75,45 @@ function DocumentView({ item }: { item: any }) {
 
 // ─── VIDEO VIEW ───────────────────────────────────────────────────────────────
 function VideoView({ item, onProgress }: { item: any; onProgress: (pct: number) => void }) {
-  return (
-    <View style={styles.videoWrap}>
-      <View style={styles.videoPlayer}>
-        <Ionicons name="play-circle" size={72} color="#fff" />
-        <Text style={styles.videoNote}>Video player — use expo-av in native build</Text>
-        {item.description ? <Text style={styles.videoDesc}>{item.description}</Text> : null}
+  const videoRef = useRef<Video>(null);
+
+  if (!item.videoUrl) {
+    return (
+      <View style={styles.videoWrap}>
+        <View style={styles.videoPlaceholder}>
+          <Ionicons name="play-circle" size={64} color={Colors.textMuted} />
+          <Text style={styles.videoNote}>No video file attached to this item.</Text>
+          {item.description ? <Text style={styles.videoDesc}>{item.description}</Text> : null}
+        </View>
       </View>
-    </View>
+    );
+  }
+
+  const uri = item.videoUrl.startsWith('http') ? item.videoUrl : `${BASE_URL}${item.videoUrl}`;
+
+  return (
+    <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+      <Video
+        ref={videoRef}
+        style={styles.videoPlayer}
+        source={{ uri }}
+        useNativeControls
+        resizeMode={ResizeMode.CONTAIN}
+        onPlaybackStatusUpdate={(status: any) => {
+          if (status.isLoaded && status.durationMillis && status.positionMillis) {
+            const pct = Math.round((status.positionMillis / status.durationMillis) * 100);
+            onProgress(pct);
+          }
+        }}
+      />
+      {item.description ? (
+        <>
+          <Text style={[styles.subheading, { marginTop: Spacing.md }]}>About this Video</Text>
+          <Text style={styles.bodyText}>{item.description}</Text>
+        </>
+      ) : null}
+      <View style={{ height: 120 }} />
+    </ScrollView>
   );
 }
 
@@ -505,8 +545,14 @@ const styles = StyleSheet.create({
   },
 
   // Video
-  videoWrap: { flex: 1, gap: Spacing.md, padding: Spacing.md },
+  videoWrap: { flex: 1, padding: Spacing.md },
   videoPlayer: {
+    width: '100%',
+    aspectRatio: 16 / 9,
+    backgroundColor: '#000',
+    borderRadius: Radius.md,
+  },
+  videoPlaceholder: {
     backgroundColor: Colors.surface, borderRadius: Radius.md,
     aspectRatio: 16 / 9, alignItems: 'center', justifyContent: 'center',
     gap: Spacing.sm, padding: Spacing.md,

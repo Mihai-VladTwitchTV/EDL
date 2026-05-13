@@ -99,10 +99,12 @@ public class ContentController {
         @RequestParam(defaultValue = "false") boolean mandatory,
         @RequestParam(required = false) String categoryId,
         @RequestParam(required = false) List<String> departmentIds,
-        @RequestParam(required = false) MultipartFile file
+        @RequestParam(required = false) MultipartFile file,
+        @RequestParam(required = false) String body,
+        @RequestParam(required = false) String videoUrl
     ) {
         return ResponseEntity.status(201).body(
-            contentService.createContent(user, title, description, contentType, postType, language, mandatory, categoryId, departmentIds, file)
+            contentService.createContent(user, title, description, contentType, postType, language, mandatory, categoryId, departmentIds, file, body, videoUrl)
         );
     }
 
