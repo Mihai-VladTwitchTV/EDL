@@ -57,6 +57,7 @@ export default function RootLayout() {
         <Stack.Screen name="support" options={{ presentation: 'card', headerShown: false }} />
         <Stack.Screen name="about" options={{ presentation: 'card', headerShown: false }} />
         <Stack.Screen name="regulations" options={{ presentation: 'card', headerShown: false }} />
+        <Stack.Screen name="create-content" options={{ presentation: 'card', headerShown: false }} />
       </Stack>
       <FlashMessage position="top" />
     </QueryClientProvider>

@@ -115,6 +115,8 @@ export default function FeedScreen() {
     );
   }
 
+  const canCreate = user?.role === 'MASTER_MENTOR' || user?.role === 'HR_ADMIN';
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -144,6 +146,16 @@ export default function FeedScreen() {
         }
         showsVerticalScrollIndicator={false}
       />
+
+      {canCreate && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => router.push('/create-content')}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="add" size={28} color="#fff" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -227,4 +239,12 @@ const styles = StyleSheet.create({
   emptyIcon: { fontSize: 48 },
   emptyText: { color: Colors.textPrimary, fontSize: FontSize.lg, fontWeight: '600' },
   emptySubtext: { color: Colors.textMuted, fontSize: FontSize.sm },
+  fab: {
+    position: 'absolute', bottom: 90, right: Spacing.md,
+    width: 56, height: 56, borderRadius: 28,
+    backgroundColor: Colors.primary,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: Colors.primary, shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4, shadowRadius: 8, elevation: 8,
+  },
 });

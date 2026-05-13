@@ -93,15 +93,23 @@ public class ContentController {
         @AuthenticationPrincipal User user,
         @RequestParam String title,
         @RequestParam(required = false) String description,
-        @RequestParam String contentType,
+        @RequestParam(defaultValue = "DOCUMENT") String contentType,
+        @RequestParam(defaultValue = "TRAINING") String postType,
+        @RequestParam(defaultValue = "EN") String language,
         @RequestParam(defaultValue = "false") boolean mandatory,
         @RequestParam(required = false) String categoryId,
         @RequestParam(required = false) List<String> departmentIds,
         @RequestParam(required = false) MultipartFile file
     ) {
         return ResponseEntity.status(201).body(
-            contentService.createContent(user, title, description, contentType, mandatory, categoryId, departmentIds, file)
+            contentService.createContent(user, title, description, contentType, postType, language, mandatory, categoryId, departmentIds, file)
         );
+    }
+
+    @GetMapping("/compliance")
+    @PreAuthorize("hasRole('HR_ADMIN')")
+    public ResponseEntity<List<ComplianceSummaryResponse>> getCompliance() {
+        return ResponseEntity.ok(contentService.getComplianceSummary());
     }
 
     @PostMapping("/{id}/submit-review")

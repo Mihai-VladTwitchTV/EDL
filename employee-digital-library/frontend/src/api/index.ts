@@ -63,6 +63,12 @@ export const contentApi = {
     api.patch(`/api/content/${id}/progress`, { pct }),
   submitRequest: (data: { searchTerm?: string; description: string }) =>
     api.post('/api/content-requests', data),
+  create: (form: FormData) =>
+    api.post('/api/content', form, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  submitForReview: (id: string) =>
+    api.post(`/api/content/${id}/submit-review`),
+  getCompliance: () =>
+    api.get('/api/content/compliance'),
 };
 
 // ----- Notifications -----
@@ -103,6 +109,8 @@ export const certApi = {
 export const feedbackApi = {
   submit: (data: { category: string; message: string; anonymous?: boolean }) =>
     api.post('/api/feedback', data),
+  getAll: (page = 0) =>
+    api.get('/api/feedback', { params: { page } }),
 };
 
 // ----- Support -----
@@ -111,6 +119,10 @@ export const supportApi = {
     api.post('/api/support', data),
   getMyTickets: (page = 0) =>
     api.get('/api/support/me', { params: { page } }),
+  getAll: (page = 0, status?: string) =>
+    api.get('/api/support', { params: { page, ...(status ? { status } : {}) } }),
+  resolve: (id: string) =>
+    api.post(`/api/support/${id}/resolve`),
 };
 
 // ----- Company Pages -----

@@ -1,7 +1,9 @@
 package com.edl.service;
 
+import com.edl.dto.response.Responses.ComplianceSummaryResponse;
 import com.edl.dto.response.Responses.ContentCardResponse;
 import com.edl.dto.response.Responses.PagedResponse;
+import com.edl.repository.ContentItemRepository.ComplianceRow;
 import com.edl.entity.*;
 import com.edl.entity.ContentItem.ContentStatus;
 import com.edl.entity.ContentItem.ContentType;
@@ -171,16 +173,22 @@ public class ContentService {
     @Transactional
     public ContentCardResponse createContent(
         User author, String title, String description,
-        String contentTypeStr, boolean mandatory,
+        String contentTypeStr, String postTypeStr, String languageStr, boolean mandatory,
         String categoryId, List<String> departmentIds,
         MultipartFile file
     ) {
         ContentType type = ContentType.valueOf(contentTypeStr.toUpperCase());
+        PostType postType = postTypeStr != null
+            ? PostType.valueOf(postTypeStr.toUpperCase()) : PostType.TRAINING;
+        User.LanguageCode lang = languageStr != null
+            ? User.LanguageCode.valueOf(languageStr.toUpperCase()) : User.LanguageCode.EN;
 
         ContentItem item = ContentItem.builder()
             .title(title)
             .description(description)
             .contentType(type)
+            .postType(postType)
+            .language(lang)
             .status(ContentStatus.DRAFT)
             .mandatory(mandatory)
             .author(author)
@@ -228,6 +236,26 @@ public class ContentService {
         contentRepo.save(item);
         // notify targeted departments
         notificationService.notifyNewContent(item);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ComplianceSummaryResponse> getComplianceSummary() {
+        return contentRepo.getComplianceSummary().stream()
+            .map(row -> {
+                long total = row.getTotalTargeted();
+                long ack   = row.getAcknowledged();
+                long comp  = row.getCompleted();
+                return ComplianceSummaryResponse.builder()
+                    .contentId(row.getContentId())
+                    .contentTitle(row.getContentTitle())
+                    .totalTargeted(total)
+                    .acknowledged(ack)
+                    .completed(comp)
+                    .ackPct(total > 0 ? (int) Math.round((double) ack / total * 100) : 0)
+                    .completedPct(total > 0 ? (int) Math.round((double) comp / total * 100) : 0)
+                    .build();
+            })
+            .toList();
     }
 
     @Transactional(readOnly = true)

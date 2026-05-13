@@ -216,6 +216,19 @@ public class Responses {
         private int displayOrder;
     }
 
+    // ── Compliance ──────────────────────────────────────────
+
+    @Data @Builder
+    public static class ComplianceSummaryResponse {
+        private String contentId;
+        private String contentTitle;
+        private long totalTargeted;
+        private long acknowledged;
+        private long completed;
+        private int ackPct;
+        private int completedPct;
+    }
+
     // ── Meta ────────────────────────────────────────────────
 
     @Data @Builder

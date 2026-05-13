@@ -136,6 +136,31 @@ public interface ContentItemRepository extends JpaRepository<ContentItem, UUID> 
     Page<ContentItem> findFeedAllByPostType(@Param("postType") PostType postType, Pageable pageable);
 
     // -------------------------------------------------------
+    // COMPLIANCE SUMMARY (native query on mandatory_compliance_view)
+    // -------------------------------------------------------
+
+    interface ComplianceRow {
+        String getContentId();
+        String getContentTitle();
+        long getTotalTargeted();
+        long getAcknowledged();
+        long getCompleted();
+    }
+
+    @Query(value = """
+        SELECT
+            content_id::text    AS contentId,
+            content_title       AS contentTitle,
+            COUNT(*)            AS totalTargeted,
+            SUM(CASE WHEN acknowledged = true THEN 1 ELSE 0 END) AS acknowledged,
+            SUM(CASE WHEN completed   = true THEN 1 ELSE 0 END) AS completed
+        FROM mandatory_compliance_view
+        GROUP BY content_id, content_title
+        ORDER BY content_title
+        """, nativeQuery = true)
+    List<ComplianceRow> getComplianceSummary();
+
+    // -------------------------------------------------------
     // CATEGORY FILTER
     // -------------------------------------------------------
     @Query("""
