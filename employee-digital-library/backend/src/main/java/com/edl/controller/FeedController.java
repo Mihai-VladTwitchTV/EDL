@@ -25,9 +25,10 @@ public class FeedController {
     public ResponseEntity<PagedResponse<ContentCardResponse>> getFeed(
         @AuthenticationPrincipal User user,
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "20") int size
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) String postType
     ) {
-        return ResponseEntity.ok(contentService.getFeed(user, PageRequest.of(page, size)));
+        return ResponseEntity.ok(contentService.getFeed(user, PageRequest.of(page, size), postType));
     }
 
     /** Unacknowledged mandatory items for banner display */

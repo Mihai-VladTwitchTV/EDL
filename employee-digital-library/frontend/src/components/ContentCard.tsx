@@ -5,11 +5,14 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, Radius, FontSize } from '../utils/theme';
 
+export type PostType = 'TRAINING' | 'NEWS' | 'EVENT' | 'CHANGE' | 'CAREER' | 'REGULATION';
+
 export interface ContentCardData {
   id: string;
   title: string;
   description?: string;
   contentType: 'DOCUMENT' | 'VIDEO' | 'QUIZ';
+  postType?: PostType;
   mandatory: boolean;
   categoryName?: string;
   categoryIconName?: string;
@@ -18,6 +21,12 @@ export interface ContentCardData {
   authorName?: string;
   viewCount: number;
   createdAt: string;
+  eventDate?: string;
+  eventLocation?: string;
+  jobDepartment?: string;
+  jobLocation?: string;
+  applicationUrl?: string;
+  linkedQuizId?: string;
   userAcknowledged?: boolean;
   userCompleted?: boolean;
   userProgressPct?: number;
@@ -38,6 +47,15 @@ const TYPE_COLOR: Record<string, string> = {
   DOCUMENT: '#3B82F6',
   VIDEO: '#8B5CF6',
   QUIZ: '#10B981',
+};
+
+const POST_TYPE_COLOR: Record<string, string> = {
+  TRAINING:   '#3B82F6',
+  NEWS:       '#8B5CF6',
+  EVENT:      '#F59E0B',
+  CHANGE:     '#EF4444',
+  CAREER:     '#10B981',
+  REGULATION: '#64748B',
 };
 
 export default function ContentCard({ item, onPress }: Props) {
@@ -81,12 +99,20 @@ export default function ContentCard({ item, onPress }: Props) {
               </View>
             ) : null}
 
-            {/* Content type chip */}
-            <View style={[styles.chip, { borderColor: typeColor }]}>
-              <Text style={[styles.chipText, { color: typeColor }]}>
-                {item.contentType}
-              </Text>
-            </View>
+            {/* Post type chip */}
+            {item.postType ? (
+              <View style={[styles.chip, { borderColor: POST_TYPE_COLOR[item.postType] ?? Colors.primary }]}>
+                <Text style={[styles.chipText, { color: POST_TYPE_COLOR[item.postType] ?? Colors.primary }]}>
+                  {item.postType}
+                </Text>
+              </View>
+            ) : (
+              <View style={[styles.chip, { borderColor: typeColor }]}>
+                <Text style={[styles.chipText, { color: typeColor }]}>
+                  {item.contentType}
+                </Text>
+              </View>
+            )}
 
             {/* View count */}
             <View style={styles.stat}>

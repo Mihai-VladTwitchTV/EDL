@@ -1,10 +1,15 @@
 package com.edl.service;
 
+import com.edl.dto.response.Responses.ComplianceSummaryResponse;
 import com.edl.dto.response.Responses.ContentCardResponse;
 import com.edl.dto.response.Responses.PagedResponse;
+import com.edl.repository.ContentItemRepository.ComplianceRow;
 import com.edl.entity.*;
 import com.edl.entity.ContentItem.ContentStatus;
 import com.edl.entity.ContentItem.ContentType;
+import com.edl.entity.ContentItem.PostType;
+import com.edl.entity.ContentDocument;
+import com.edl.entity.ContentVideo;
 import com.edl.exception.ApiException;
 import com.edl.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +39,10 @@ public class ContentService {
     private final UserContentProgressRepository progressRepo;
     private final CategoryRepository categoryRepo;
     private final DepartmentRepository deptRepo;
+    private final ContentDocumentRepository docRepo;
+    private final ContentVideoRepository videoRepo;
     private final NotificationService notificationService;
+    private final GamificationService gamificationService;
 
     @Value("${storage.upload-dir:./uploads}")
     private String uploadDir;
@@ -44,12 +52,18 @@ public class ContentService {
     // -------------------------------------------------------
 
     @Transactional(readOnly = true)
-    public PagedResponse<ContentCardResponse> getFeed(User user, Pageable pageable) {
+    public PagedResponse<ContentCardResponse> getFeed(User user, Pageable pageable, String postTypeStr) {
+        PostType postType = postTypeStr != null ? PostType.valueOf(postTypeStr.toUpperCase()) : null;
         Page<ContentItem> page;
-        if (user.getDepartment() != null) {
-            page = contentRepo.findFeedForDepartment(user.getDepartment().getId(), pageable);
+        UUID deptId = user.getDepartment() != null ? user.getDepartment().getId() : null;
+        if (postType != null) {
+            page = deptId != null
+                ? contentRepo.findFeedForDepartmentByPostType(deptId, postType, pageable)
+                : contentRepo.findFeedAllByPostType(postType, pageable);
         } else {
-            page = contentRepo.findFeedAll(pageable);
+            page = deptId != null
+                ? contentRepo.findFeedForDepartment(deptId, pageable)
+                : contentRepo.findFeedAll(pageable);
         }
         return toPagedResponse(page, user);
     }
@@ -100,9 +114,21 @@ public class ContentService {
             .orElseThrow(() -> new ApiException("Content not found", HttpStatus.NOT_FOUND));
         contentRepo.incrementViewCount(id);
         UserContentProgress progress = getOrCreateProgress(user, item);
+        boolean firstView = progress.getId() == null;
         progress.setLastAccessedAt(OffsetDateTime.now());
         progressRepo.save(progress);
-        return toCard(item, progress);
+        if (firstView) {
+            gamificationService.awardXp(user, "CONTENT_VIEWED", GamificationService.XP_CONTENT_VIEWED, item);
+            gamificationService.updateStreak(user);
+        }
+        String bodyHtml = null;
+        String videoUrl = null;
+        if (item.getContentType() == ContentType.DOCUMENT) {
+            bodyHtml = docRepo.findByContent_Id(id).map(ContentDocument::getBodyHtml).orElse(null);
+        } else if (item.getContentType() == ContentType.VIDEO) {
+            videoUrl = videoRepo.findByContent_Id(id).map(ContentVideo::getVideoUrl).orElse(null);
+        }
+        return toCard(item, progress, bodyHtml, videoUrl);
     }
 
     // -------------------------------------------------------
@@ -118,6 +144,9 @@ public class ContentService {
             p.setAcknowledged(true);
             p.setAcknowledgedAt(OffsetDateTime.now());
             progressRepo.save(p);
+            if (item.isMandatory()) {
+                gamificationService.awardXp(user, "MANDATORY_ACKNOWLEDGED", GamificationService.XP_MANDATORY_ACK, item);
+            }
         }
     }
 
@@ -131,6 +160,7 @@ public class ContentService {
             p.setCompletedAt(OffsetDateTime.now());
             p.setProgressPct((short) 100);
             progressRepo.save(p);
+            gamificationService.awardXp(user, "CONTENT_COMPLETED", GamificationService.XP_CONTENT_COMPLETED, item);
         }
     }
 
@@ -154,16 +184,22 @@ public class ContentService {
     @Transactional
     public ContentCardResponse createContent(
         User author, String title, String description,
-        String contentTypeStr, boolean mandatory,
+        String contentTypeStr, String postTypeStr, String languageStr, boolean mandatory,
         String categoryId, List<String> departmentIds,
-        MultipartFile file
+        MultipartFile file, String body, String videoUrl
     ) {
         ContentType type = ContentType.valueOf(contentTypeStr.toUpperCase());
+        PostType postType = postTypeStr != null
+            ? PostType.valueOf(postTypeStr.toUpperCase()) : PostType.TRAINING;
+        User.LanguageCode lang = languageStr != null
+            ? User.LanguageCode.valueOf(languageStr.toUpperCase()) : User.LanguageCode.EN;
 
         ContentItem item = ContentItem.builder()
             .title(title)
             .description(description)
             .contentType(type)
+            .postType(postType)
+            .language(lang)
             .status(ContentStatus.DRAFT)
             .mandatory(mandatory)
             .author(author)
@@ -187,6 +223,14 @@ public class ContentService {
         }
 
         contentRepo.save(item);
+
+        if (type == ContentType.DOCUMENT && body != null && !body.isBlank()) {
+            docRepo.save(ContentDocument.builder().content(item).bodyHtml(body).build());
+        }
+        if (type == ContentType.VIDEO && videoUrl != null && !videoUrl.isBlank()) {
+            videoRepo.save(ContentVideo.builder().content(item).videoUrl(videoUrl).build());
+        }
+
         return toCard(item, null);
     }
 
@@ -211,6 +255,26 @@ public class ContentService {
         contentRepo.save(item);
         // notify targeted departments
         notificationService.notifyNewContent(item);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ComplianceSummaryResponse> getComplianceSummary() {
+        return contentRepo.getComplianceSummary().stream()
+            .map(row -> {
+                long total = row.getTotalTargeted();
+                long ack   = row.getAcknowledged();
+                long comp  = row.getCompleted();
+                return ComplianceSummaryResponse.builder()
+                    .contentId(row.getContentId())
+                    .contentTitle(row.getContentTitle())
+                    .totalTargeted(total)
+                    .acknowledged(ack)
+                    .completed(comp)
+                    .ackPct(total > 0 ? (int) Math.round((double) ack / total * 100) : 0)
+                    .completedPct(total > 0 ? (int) Math.round((double) comp / total * 100) : 0)
+                    .build();
+            })
+            .toList();
     }
 
     @Transactional(readOnly = true)
@@ -255,11 +319,17 @@ public class ContentService {
     }
 
     public static ContentCardResponse toCard(ContentItem item, UserContentProgress progress) {
+        return toCard(item, progress, null, null);
+    }
+
+    public static ContentCardResponse toCard(ContentItem item, UserContentProgress progress,
+                                             String bodyHtml, String videoUrl) {
         return ContentCardResponse.builder()
             .id(item.getId())
             .title(item.getTitle())
             .description(item.getDescription())
             .contentType(item.getContentType().name())
+            .postType(item.getPostType() != null ? item.getPostType().name() : null)
             .mandatory(item.isMandatory())
             .categoryName(item.getCategory() != null ? item.getCategory().getName() : null)
             .categoryIconName(item.getCategory() != null ? item.getCategory().getIconName() : null)
@@ -268,9 +338,17 @@ public class ContentService {
             .authorName(item.getAuthor() != null ? item.getAuthor().getFullName() : null)
             .viewCount(item.getViewCount())
             .createdAt(item.getCreatedAt())
+            .eventDate(item.getEventDate())
+            .eventLocation(item.getEventLocation())
+            .jobDepartment(item.getJobDepartment())
+            .jobLocation(item.getJobLocation())
+            .applicationUrl(item.getApplicationUrl())
+            .linkedQuizId(item.getLinkedQuiz() != null ? item.getLinkedQuiz().getId() : null)
             .userAcknowledged(progress != null ? progress.isAcknowledged() : null)
             .userCompleted(progress != null ? progress.isCompleted() : null)
             .userProgressPct(progress != null ? progress.getProgressPct() : null)
+            .bodyHtml(bodyHtml)
+            .videoUrl(videoUrl)
             .build();
     }
 

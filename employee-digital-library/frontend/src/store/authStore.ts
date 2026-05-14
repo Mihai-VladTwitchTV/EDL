@@ -9,8 +9,13 @@ export interface UserProfile {
   role: 'EMPLOYEE' | 'MASTER_MENTOR' | 'HR_ADMIN';
   department?: string;
   departmentId?: string;
+  sectionId?: string;
+  sectionName?: string;
   avatarUrl?: string;
   preferredLang: 'RO' | 'EN';
+  xpPoints?: number;
+  level?: number;
+  streakDays?: number;
 }
 
 interface AuthState {
