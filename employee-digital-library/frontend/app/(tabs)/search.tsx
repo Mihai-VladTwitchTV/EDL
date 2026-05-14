@@ -103,7 +103,7 @@ export default function SearchScreen() {
       ) : (
         <FlatList
           data={results}
-          keyExtractor={item => item.id}
+          keyExtractor={(_, index) => index.toString()}
           renderItem={({ item }) => (
             <ContentCard item={item} onPress={i => router.push(`/content/${i.id}`)} />
           )}
