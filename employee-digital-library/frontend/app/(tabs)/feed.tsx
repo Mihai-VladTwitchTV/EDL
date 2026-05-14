@@ -8,12 +8,14 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { feedApi } from '../../src/api';
 import ContentCard, { ContentCardData } from '../../src/components/ContentCard';
+import PostTypeFilterBar, { PostTypeFilter } from '../../src/components/PostTypeFilterBar';
 import { useAuthStore } from '../../src/store/authStore';
 import { Colors, Spacing, Radius, FontSize } from '../../src/utils/theme';
 
 export default function FeedScreen() {
   const router = useRouter();
   const user = useAuthStore(s => s.user);
+  const [postTypeFilter, setPostTypeFilter] = useState<PostTypeFilter>('ALL');
 
   // Mandatory pending banner
   const { data: mandatoryItems } = useQuery({
@@ -22,12 +24,14 @@ export default function FeedScreen() {
     refetchInterval: 60_000,
   });
 
-  // Infinite scroll feed
+  // Infinite scroll feed — re-queries when filter changes
   const {
     data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, refetch, isRefetching,
   } = useInfiniteQuery({
-    queryKey: ['feed'],
-    queryFn: ({ pageParam = 0 }) => feedApi.getFeed(pageParam, 20).then(r => r.data),
+    queryKey: ['feed', postTypeFilter],
+    queryFn: ({ pageParam = 0 }) =>
+      feedApi.getFeed(pageParam, 20, postTypeFilter === 'ALL' ? undefined : postTypeFilter)
+        .then(r => r.data),
     getNextPageParam: (lastPage: any) => lastPage.last ? undefined : lastPage.page + 1,
     initialPageParam: 0,
   });
@@ -46,11 +50,19 @@ export default function FeedScreen() {
           <Text style={styles.greetingHello}>Good day,</Text>
           <Text style={styles.greetingName}>{user?.fullName?.split(' ')[0] ?? 'there'} 👋</Text>
         </View>
-        {user?.department && (
-          <View style={styles.deptBadge}>
-            <Text style={styles.deptText}>{user.department}</Text>
-          </View>
-        )}
+        <View style={styles.badges}>
+          {user?.sectionName && (
+            <View style={[styles.badge, styles.sectionBadge]}>
+              <Ionicons name="people-outline" size={12} color={Colors.secondary} />
+              <Text style={[styles.badgeText, { color: Colors.secondary }]}>{user.sectionName}</Text>
+            </View>
+          )}
+          {user?.department && (
+            <View style={[styles.badge, styles.deptBadge]}>
+              <Text style={styles.deptText}>{user.department}</Text>
+            </View>
+          )}
+        </View>
       </View>
 
       {/* Mandatory items alert strip */}
@@ -78,6 +90,9 @@ export default function FeedScreen() {
         </View>
       )}
 
+      {/* Post type filter bar */}
+      <PostTypeFilterBar selected={postTypeFilter} onSelect={setPostTypeFilter} />
+
       {/* Feed label */}
       <Text style={styles.sectionLabel}>Your Feed</Text>
     </View>
@@ -99,6 +114,8 @@ export default function FeedScreen() {
       </View>
     );
   }
+
+  const canCreate = user?.role === 'MASTER_MENTOR' || user?.role === 'HR_ADMIN';
 
   return (
     <View style={styles.container}>
@@ -129,6 +146,16 @@ export default function FeedScreen() {
         }
         showsVerticalScrollIndicator={false}
       />
+
+      {canCreate && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => router.push('/create-content')}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="add" size={28} color="#fff" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -146,14 +173,25 @@ const styles = StyleSheet.create({
   },
   greetingHello: { color: Colors.textMuted, fontSize: FontSize.sm },
   greetingName: { color: Colors.textPrimary, fontSize: FontSize.xl, fontWeight: '700' },
+  badges: { flexDirection: 'row', gap: 6, alignItems: 'center', flexWrap: 'wrap', maxWidth: 180 },
+  badge: {
+    borderRadius: Radius.full,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  sectionBadge: {
+    backgroundColor: Colors.secondary + '18',
+    borderColor: Colors.secondary + '44',
+  },
   deptBadge: {
     backgroundColor: Colors.primary + '22',
-    borderRadius: Radius.full,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderWidth: 1,
     borderColor: Colors.primary + '44',
   },
+  badgeText: { fontSize: FontSize.xs, fontWeight: '600' },
   deptText: { color: Colors.primary, fontSize: FontSize.sm, fontWeight: '600' },
 
   // Mandatory strip
@@ -201,4 +239,12 @@ const styles = StyleSheet.create({
   emptyIcon: { fontSize: 48 },
   emptyText: { color: Colors.textPrimary, fontSize: FontSize.lg, fontWeight: '600' },
   emptySubtext: { color: Colors.textMuted, fontSize: FontSize.sm },
+  fab: {
+    position: 'absolute', bottom: 90, right: Spacing.md,
+    width: 56, height: 56, borderRadius: 28,
+    backgroundColor: Colors.primary,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: Colors.primary, shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4, shadowRadius: 8, elevation: 8,
+  },
 });

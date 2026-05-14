@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.List;
+import java.util.UUID;
+
 public class AuthRequests {
 
     @Data
@@ -25,5 +28,45 @@ public class AuthRequests {
         private String fullName;
         private String departmentId;
         private String preferredLang = "RO";
+    }
+
+    @Data
+    public static class QuizAttemptRequest {
+        private List<QuestionAnswer> answers;
+
+        @Data
+        public static class QuestionAnswer {
+            private UUID questionId;
+            private List<UUID> selectedAnswerIds;
+        }
+    }
+
+    @Data
+    public static class FeedbackRequest {
+        @NotBlank
+        private String category;
+        @NotBlank
+        private String message;
+        private boolean anonymous = false;
+    }
+
+    @Data
+    public static class SupportTicketRequest {
+        @NotBlank
+        private String ticketType;
+        @NotBlank
+        private String subject;
+        @NotBlank
+        private String description;
+    }
+
+    @Data
+    public static class CreateCertificationRequest {
+        @NotBlank
+        private String name;
+        private String description;
+        private String contentId;
+        private short passThreshold = 70;
+        private Integer validDays;
     }
 }

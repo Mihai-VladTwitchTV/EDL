@@ -52,6 +52,12 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="content/[id]" options={{ presentation: 'card', headerShown: true, headerStyle: { backgroundColor: Colors.surface }, headerTintColor: Colors.textPrimary }} />
+        <Stack.Screen name="leaderboard" options={{ presentation: 'card', headerShown: true, title: 'Section Leaderboard', headerStyle: { backgroundColor: Colors.surface }, headerTintColor: Colors.textPrimary }} />
+        <Stack.Screen name="feedback" options={{ presentation: 'card', headerShown: false }} />
+        <Stack.Screen name="support" options={{ presentation: 'card', headerShown: false }} />
+        <Stack.Screen name="about" options={{ presentation: 'card', headerShown: false }} />
+        <Stack.Screen name="regulations" options={{ presentation: 'card', headerShown: false }} />
+        <Stack.Screen name="create-content" options={{ presentation: 'card', headerShown: false }} />
       </Stack>
       <FlashMessage position="top" />
     </QueryClientProvider>

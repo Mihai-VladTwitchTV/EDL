@@ -147,13 +147,21 @@ All endpoints require `Authorization: Bearer <token>` except auth routes.
 
 ## 🧪 Mock Accounts & Seed Data
 
-Run `db/seed.sql` once after the database is up to load mock content and test accounts:
+> **Full command reference:** See [`db/DB.md`](db/DB.md) for copy-paste ready commands and maintenance tips.
+
+Run the seeds **in order** (schema → migrations → seed → post-type seed → pages seed):
 
 ```bash
+docker exec -i edl_postgres psql -U edl_user -d employee_digital_library < db/init.sql
+docker exec -i edl_postgres psql -U edl_user -d employee_digital_library < db/002_sections_gamification.sql
 docker exec -i edl_postgres psql -U edl_user -d employee_digital_library < db/seed.sql
+docker exec -i edl_postgres psql -U edl_user -d employee_digital_library < db/003_posttype_seed.sql
+docker exec -i edl_postgres psql -U edl_user -d employee_digital_library < db/004_company_pages_seed.sql
 ```
 
-Safe to re-run — all inserts use `ON CONFLICT DO NOTHING`.
+All scripts are idempotent — safe to re-run.
+
+> **When using Docker Compose**, all scripts run automatically on first `docker compose up`. Only run manually if Postgres was started outside Compose.
 
 ### Mock accounts
 
@@ -163,7 +171,7 @@ Safe to re-run — all inserts use `ON CONFLICT DO NOTHING`.
 | `MASTER_MENTOR` | `mentor@mail.com` | `mentor123` |
 | `EMPLOYEE` | `user@mail.com` | `user123` |
 
-The seed also creates 5 published content items (2 mandatory documents, 2 videos, 1 quiz) spread across departments, plus a sample content request.
+The seeds together create **15 published content items** across all 6 post types (TRAINING ×5, NEWS ×2, EVENT ×2, CHANGE ×2, CAREER ×2, REGULATION ×2) spread across departments, plus a sample content request, a quiz with 3 questions, and 9 company info pages (About, Policies, Contact).
 
 ---
 
@@ -225,11 +233,11 @@ Also update `docker-compose.yml` if you change the DB password.
 
 ## 🔧 Next Steps / Extensions
 
-- [ ] Wire up real quiz questions endpoint from `quiz_questions` / `quiz_answers` tables
 - [ ] Add `expo-av` Video component for real video playback
 - [ ] Push notifications via Expo Push API (store tokens in `device_tokens` table)
-- [ ] Add rich text editor for document body (react-native-editor)
+- [ ] Add rich text editor for document body (react-native-editor or WebView)
 - [ ] Offline support with AsyncStorage caching
 - [ ] HR compliance export (PDF report from `mandatory_compliance_view`)
-- [ ] Content editing / versioning UI for mentors
+- [ ] Content editing / versioning UI (update existing drafts before review)
 - [ ] Active Directory / SSO integration
+- [ ] Quiz builder UI for MASTER_MENTOR (add questions + answers in-app)

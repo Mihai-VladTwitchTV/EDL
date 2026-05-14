@@ -90,8 +90,13 @@ public class AuthService {
             .role(user.getRole().name())
             .department(user.getDepartment() != null ? user.getDepartment().getName() : null)
             .departmentId(user.getDepartment() != null ? user.getDepartment().getId().toString() : null)
+            .sectionId(user.getSection() != null ? user.getSection().getId().toString() : null)
+            .sectionName(user.getSection() != null ? user.getSection().getName() : null)
             .avatarUrl(user.getAvatarUrl())
             .preferredLang(user.getPreferredLang().name())
+            .xpPoints(user.getXpPoints())
+            .level(user.getLevel())
+            .streakDays(user.getStreakDays())
             .build();
     }
 }

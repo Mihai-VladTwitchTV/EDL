@@ -5,6 +5,7 @@ import com.edl.dto.response.Responses.PagedResponse;
 import com.edl.entity.Notification;
 import com.edl.entity.User;
 import com.edl.repository.NotificationRepository;
+import com.edl.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 public class NotificationController {
 
     private final NotificationRepository notifRepo;
+    private final NotificationService notificationService;
 
     @GetMapping
     public ResponseEntity<PagedResponse<NotificationResponse>> getNotifications(
@@ -48,6 +50,18 @@ public class NotificationController {
     @PostMapping("/mark-all-read")
     public ResponseEntity<Void> markAllRead(@AuthenticationPrincipal User user) {
         notifRepo.markAllReadForUser(user.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/register-token")
+    public ResponseEntity<Void> registerToken(
+        @AuthenticationPrincipal User user,
+        @RequestBody Map<String, String> body
+    ) {
+        String token = body.get("token");
+        if (token != null && !token.isBlank()) {
+            notificationService.registerToken(user, token);
+        }
         return ResponseEntity.noContent().build();
     }
 
