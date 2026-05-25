@@ -44,6 +44,7 @@ public class QuizService {
         if (questions.isEmpty()) {
             throw new ApiException("Quiz has no questions", HttpStatus.BAD_REQUEST);
         }
+        int priorAttempts = attemptRepo.countByUserIdAndContentId(user.getId(), contentId);
 
         List<UUID> questionIds = questions.stream().map(QuizQuestion::getId).toList();
         List<QuizAnswer> allAnswers = answerRepo.findByQuestionIdInOrderByPositionAsc(questionIds);
@@ -73,8 +74,15 @@ public class QuizService {
             .user(user).content(content).scorePct(scorePct).passed(passed).build();
         attemptRepo.save(attempt);
 
-        int xpAwarded = passed ? GamificationService.XP_QUIZ_PASSED : GamificationService.XP_QUIZ_ATTEMPTED;
+        int xpAwarded = passed
+            ? (content.getXpReward() > 0 ? content.getXpReward() : GamificationService.XP_QUIZ_PASSED)
+            : GamificationService.XP_QUIZ_ATTEMPTED;
         gamificationService.awardXp(user, passed ? "QUIZ_PASSED" : "QUIZ_ATTEMPTED", xpAwarded, content);
+
+        if (passed && priorAttempts == 0 && content.getXpBonusFirstAttempt() > 0) {
+            gamificationService.awardXp(user, "QUIZ_FIRST_ATTEMPT_BONUS", content.getXpBonusFirstAttempt(), content);
+            xpAwarded += content.getXpBonusFirstAttempt();
+        }
 
         String certName = null;
         if (passed) {

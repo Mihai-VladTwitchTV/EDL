@@ -95,6 +95,14 @@ public class ContentItem {
     @Column(name = "application_url", length = 500)
     private String applicationUrl;
 
+    @Column(name = "xp_reward", nullable = false)
+    @Builder.Default
+    private Integer xpReward = 10;
+
+    @Column(name = "xp_bonus_first_attempt", nullable = false)
+    @Builder.Default
+    private Integer xpBonusFirstAttempt = 0;
+
     // Linked quiz (auto-triggers after document/video completion)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "linked_quiz_id")

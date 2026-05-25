@@ -59,6 +59,8 @@ public class Responses {
         private Short userProgressPct;
         private String bodyHtml;
         private String videoUrl;
+        private int xpReward;
+        private int xpBonusFirstAttempt;
     }
 
     @Data @Builder

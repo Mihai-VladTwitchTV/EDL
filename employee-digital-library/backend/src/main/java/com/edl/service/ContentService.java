@@ -145,7 +145,8 @@ public class ContentService {
             p.setAcknowledgedAt(OffsetDateTime.now());
             progressRepo.save(p);
             if (item.isMandatory()) {
-                gamificationService.awardXp(user, "MANDATORY_ACKNOWLEDGED", GamificationService.XP_MANDATORY_ACK, item);
+                int xp = item.getXpReward() > 0 ? item.getXpReward() : GamificationService.XP_MANDATORY_ACK;
+                gamificationService.awardXp(user, "MANDATORY_ACKNOWLEDGED", xp, item);
             }
         }
     }
@@ -349,6 +350,8 @@ public class ContentService {
             .userProgressPct(progress != null ? progress.getProgressPct() : null)
             .bodyHtml(bodyHtml)
             .videoUrl(videoUrl)
+            .xpReward(item.getXpReward())
+            .xpBonusFirstAttempt(item.getXpBonusFirstAttempt())
             .build();
     }
 

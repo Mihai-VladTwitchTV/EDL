@@ -20,9 +20,15 @@ DECLARE
   v_id UUID;
 BEGIN
 
-  -- Resolve users
+  -- Resolve users (fall back to system admin from init.sql if mail users not seeded yet)
   SELECT id INTO v_admin  FROM users WHERE email = 'admin@mail.com';
+  IF v_admin IS NULL THEN
+    SELECT id INTO v_admin FROM users WHERE email = 'admin@edl.com';
+  END IF;
   SELECT id INTO v_mentor FROM users WHERE email = 'mentor@mail.com';
+  IF v_mentor IS NULL THEN
+    v_mentor := v_admin;
+  END IF;
 
   -- Resolve departments
   SELECT id INTO v_dept_hr   FROM departments WHERE name = 'HR';
