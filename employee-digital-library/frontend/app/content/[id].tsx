@@ -1,4 +1,4 @@
-import RenderHtml from 'react-native-render-html';
+import RenderHtml, { defaultSystemFonts } from 'react-native-render-html';
 import React, { useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
@@ -71,25 +71,93 @@ const getYouTubeID = (url: string) => {
 // ─── DOCUMENT / REGULATION VIEW ───────────────────────────────────────────────
 function DocumentView({ item }: { item: any }) {
   const { width } = useWindowDimensions();
+  // Hardcoded mapping for specific document ID
+  const EXTERNAL_URLS: Record<string, string> = {
+    'eb1125fb-f03f-45af-803d-d8f3f3606024': 'https://docs.google.com/document/d/1-hBsyMFJKP748LCNqWSCvHcIol6hvKLTm7VMwGMOEeY/edit?usp=sharing'
+  };
 
-  // Use the raw HTML directly from the DB
-  const source = { html: item.bodyHtml ?? item.description ?? '<p>No content available.</p>' };
+  const fileUrl = EXTERNAL_URLS[item.id];
+  const isExternalLink = !!fileUrl;
 
-  // Define styles for the HTML tags
+  const handleOpenLink = () => {
+    if (fileUrl) Linking.openURL(fileUrl);
+  };
+ 
+  
+
   const tagsStyles = {
-    p: { fontSize: FontSize.md, lineHeight: 26, color: Colors.textSecondary, marginBottom: Spacing.md },
-    h2: { fontSize: FontSize.lg, fontWeight: '700', color: Colors.textPrimary, marginTop: Spacing.lg, marginBottom: Spacing.sm },
+    table: { 
+      marginTop: Spacing.md, 
+      borderWidth: 1, 
+      borderColor: Colors.border, 
+      borderRadius: Radius.md,
+      backgroundColor: Colors.surface, // Asigurăm un fundal solid
+    },
+    th: { 
+      backgroundColor: Colors.border, // Fundal mai închis pentru antet
+      padding: Spacing.sm, 
+      fontWeight: '700', 
+      fontSize: FontSize.sm,
+      color: Colors.textPrimary, // Text negru/alb (în funcție de temă)
+      borderBottomWidth: 1,
+      borderColor: Colors.border
+    },
+    td: { 
+      padding: Spacing.sm, 
+      fontSize: FontSize.sm, 
+      color: Colors.textSecondary, // Text gri vizibil
+      borderBottomWidth: 0.5, 
+      borderColor: Colors.border 
+    },
+    // Paragrafe
+    p: { 
+      fontSize: FontSize.md, 
+      lineHeight: 26, 
+      color: Colors.textSecondary, // Folosește culoarea secundară pentru textul de corp
+      marginBottom: Spacing.md 
+    },
+    // Titluri (H2)
+    h2: { 
+      fontSize: FontSize.lg, 
+      fontWeight: '700', 
+      color: Colors.textPrimary, // Titlurile trebuie să fie vizibile, folosește culoarea primară
+      marginTop: Spacing.lg, 
+      marginBottom: Spacing.sm 
+    },
+    // Liste ordonate/neordonate
+    ol: { paddingLeft: Spacing.md },
     ul: { paddingLeft: Spacing.md },
-    li: { fontSize: FontSize.md, lineHeight: 24, color: Colors.textSecondary, marginBottom: Spacing.xs }
+    li: { 
+      fontSize: FontSize.md, 
+      lineHeight: 24, 
+      color: Colors.textSecondary, 
+      marginBottom: Spacing.sm 
+    },
+    // Text bold (strong)
+    strong: { 
+      color: Colors.textPrimary, // Asigură contrastul pentru textul îngroșat
+      fontWeight: '700' 
+    }
   };
 
   return (
     <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-      <RenderHtml
-        contentWidth={width}
-        source={source}
-        tagsStyles={tagsStyles}
-      />
+      {isExternalLink ? (
+        <View style={styles.card}>
+          <Text style={styles.bodyText}>Acest document este disponibil online.</Text>
+          <TouchableOpacity style={styles.applyBtn} onPress={handleOpenLink}>
+            <Ionicons name="open-outline" size={18} color="#fff" />
+            <Text style={styles.applyBtnText}>Deschide Documentul</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <RenderHtml
+          contentWidth={width}
+          source={{ html: item.bodyHtml ?? item.description ?? '<p>No content available.</p>' }}
+          tagsStyles={tagsStyles}
+          enableExperimentalBRCollapsing={true}
+        />
+      )}
       <View style={{ height: 120 }} />
     </ScrollView>
   );
@@ -529,6 +597,29 @@ export default function ContentDetailScreen() {
 }
 
 const styles = StyleSheet.create({
+  card: { // Adaugă acest stil pentru containerul link-ului
+    backgroundColor: Colors.card,
+    padding: Spacing.md,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  applyBtn: {
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    gap: Spacing.sm, 
+    backgroundColor: Colors.primary, 
+    borderRadius: Radius.md,
+    padding: Spacing.md, 
+    marginTop: Spacing.lg,
+  },
+  applyBtnText: { 
+    color: '#fff', 
+    fontWeight: '700', 
+    fontSize: FontSize.md 
+  },
+
   container: { flex: 1, backgroundColor: Colors.bg },
   centered: { flex: 1, backgroundColor: Colors.bg, alignItems: 'center', justifyContent: 'center' },
   scroll: { flex: 1, padding: Spacing.md },
