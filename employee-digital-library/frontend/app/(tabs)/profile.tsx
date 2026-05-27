@@ -241,7 +241,7 @@ export default function ProfileScreen() {
         <View style={styles.card}>
           <Row icon="information-circle-outline" label="Version" value="1.0.0" />
           <View style={styles.divider} />
-          <Row icon="shield-outline" label="Privacy Policy" onPress={() => {}} />
+          <Row icon="shield-outline" label="Privacy Policy" onPress={() => router.push('/privacy')} />
         </View>
       </View>
 
