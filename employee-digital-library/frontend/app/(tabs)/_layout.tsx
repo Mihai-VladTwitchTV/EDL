@@ -1,41 +1,24 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, FontSize } from '../../src/utils/theme';
-import { notifApi } from '../../src/api';
 import { useAuthStore } from '../../src/store/authStore';
 
-function TabIcon({ name, color, size, badge }: {
+function TabIcon({ name, color, size }: {
   name: keyof typeof Ionicons.glyphMap;
-  color: string; size: number; badge?: number;
+  color: string; size: number;
 }) {
   return (
     <View>
       <Ionicons name={name} size={size} color={color} />
-      {badge && badge > 0 ? (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{badge > 99 ? '99+' : badge}</Text>
-        </View>
-      ) : null}
     </View>
   );
 }
 
 export default function TabsLayout() {
-  const [unread, setUnread] = useState(0);
   const user = useAuthStore(s => s.user);
   const insets = useSafeAreaInsets();
-
-  useEffect(() => {
-    const fetchUnread = () => {
-      notifApi.getUnreadCount().then(r => setUnread(r.data.count)).catch(() => {});
-    };
-    fetchUnread();
-    const interval = setInterval(fetchUnread, 30_000);
-    return () => clearInterval(interval);
-  }, []);
 
   const isAdmin = user?.role === 'HR_ADMIN';
 
@@ -64,15 +47,6 @@ export default function TabsLayout() {
           title: 'Search',
           tabBarIcon: ({ color, size, focused }) => (
             <TabIcon name={focused ? 'search' : 'search-outline'} color={color} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="notifications"
-        options={{
-          title: 'Alerts',
-          tabBarIcon: ({ color, size, focused }) => (
-            <TabIcon name={focused ? 'notifications' : 'notifications-outline'} color={color} size={size} badge={unread} />
           ),
         }}
       />
@@ -113,22 +87,5 @@ const styles = StyleSheet.create({
   tabLabel: {
     fontSize: FontSize.xs,
     fontWeight: '600',
-  },
-  badge: {
-    position: 'absolute',
-    top: -4,
-    right: -8,
-    backgroundColor: Colors.danger,
-    borderRadius: 99,
-    minWidth: 16,
-    height: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 3,
-  },
-  badgeText: {
-    color: '#fff',
-    fontSize: 9,
-    fontWeight: '700',
   },
 });

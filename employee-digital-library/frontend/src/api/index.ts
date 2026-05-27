@@ -71,18 +71,6 @@ export const contentApi = {
     api.get('/api/content/compliance'),
 };
 
-// ----- Notifications -----
-export const notifApi = {
-  getAll: (page = 0) =>
-    api.get('/api/notifications', { params: { page } }),
-  getUnreadCount: () =>
-    api.get('/api/notifications/unread-count'),
-  markAllRead: () =>
-    api.post('/api/notifications/mark-all-read'),
-  registerToken: (token: string) =>
-    api.post('/api/notifications/register-token', { token }),
-};
-
 // ----- Quiz -----
 export const quizApi = {
   getQuestions: (contentId: string) =>
