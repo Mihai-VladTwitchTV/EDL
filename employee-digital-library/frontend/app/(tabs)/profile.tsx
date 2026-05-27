@@ -232,6 +232,11 @@ export default function ProfileScreen() {
           <Row icon="chatbubbles-outline" label="Send Feedback" onPress={() => router.push('/feedback')} />
           <View style={styles.divider} />
           <Row icon="headset-outline" label="Support" onPress={() => router.push('/support')} />
+          <Row 
+            icon="help-circle-outline" 
+            label="Frequently Asked Questions" 
+            onPress={() => router.push('/faq')} 
+          />
         </View>
       </View>
 
