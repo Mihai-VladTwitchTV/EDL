@@ -1139,3 +1139,19 @@ VALUES (uuid_generate_v4(), 'emergency-contacts', 'contact', 'Urgențe',
 3, true)
 ON CONFLICT (slug) DO UPDATE SET
   title = EXCLUDED.title, body_html = EXCLUDED.body_html, is_published = TRUE, updated_at = NOW();
+
+INSERT INTO company_pages (id, slug, section, title, body_html, display_order, is_published)
+VALUES (uuid_generate_v4(), 'faq-general', 'contact', 'Întrebări Frecvente (FAQ)',
+'<h2>FAQ - Informații Uzuale</h2>
+<p>Oferirea rapidă a informațiilor uzuale fără a deschide un tichet.</p>
+<ul>
+  <li><strong>Cum resetez parola?</strong> Deschide un tichet la Support IT.</li>
+  <li><strong>Cum solicit concediu?</strong> Folosește Formularul Online (Support HR).</li>
+  <li><strong>Cum accesez VPN-ul?</strong> Caută "Ghid tehnic" în bara de Search.</li>
+  <li><strong>Care este programul HR/ IT?</strong> Verifică SLA-urile de pe pagina de Contact.</li>
+  <li><strong>Cum verific zilele de concediu rămase?</strong> Contactează Support HR.</li>
+  <li><strong>Ce fac în cazul pierderii laptopului?</strong> Folosește butonul Emergency imediat.</li>
+</ul>',
+4, true)
+ON CONFLICT (slug) DO UPDATE SET
+  title = EXCLUDED.title, body_html = EXCLUDED.body_html, is_published = TRUE, updated_at = NOW();
