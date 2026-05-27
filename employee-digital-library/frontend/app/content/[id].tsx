@@ -1,7 +1,8 @@
+import RenderHtml from 'react-native-render-html';
 import React, { useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, Linking,
+  ActivityIndicator, Linking, useWindowDimensions,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -69,12 +70,26 @@ const getYouTubeID = (url: string) => {
 
 // ─── DOCUMENT / REGULATION VIEW ───────────────────────────────────────────────
 function DocumentView({ item }: { item: any }) {
-  const bodyText = item.bodyHtml
-    ? stripHtml(item.bodyHtml)
-    : (item.description ?? 'No content available.');
+  const { width } = useWindowDimensions();
+
+  // Use the raw HTML directly from the DB
+  const source = { html: item.bodyHtml ?? item.description ?? '<p>No content available.</p>' };
+
+  // Define styles for the HTML tags
+  const tagsStyles = {
+    p: { fontSize: FontSize.md, lineHeight: 26, color: Colors.textSecondary, marginBottom: Spacing.md },
+    h2: { fontSize: FontSize.lg, fontWeight: '700', color: Colors.textPrimary, marginTop: Spacing.lg, marginBottom: Spacing.sm },
+    ul: { paddingLeft: Spacing.md },
+    li: { fontSize: FontSize.md, lineHeight: 24, color: Colors.textSecondary, marginBottom: Spacing.xs }
+  };
+
   return (
     <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-      <Text style={styles.bodyText}>{bodyText}</Text>
+      <RenderHtml
+        contentWidth={width}
+        source={source}
+        tagsStyles={tagsStyles}
+      />
       <View style={{ height: 120 }} />
     </ScrollView>
   );
