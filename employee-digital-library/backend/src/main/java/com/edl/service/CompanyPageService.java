@@ -19,13 +19,13 @@ public class CompanyPageService {
 
     @Transactional(readOnly = true)
     public List<CompanyPageResponse> getAll() {
-        return pageRepo.findByPublishedTrueOrderBySectionAscDisplayOrderAsc()
+        return pageRepo.findAllPublished()
             .stream().map(this::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public List<CompanyPageResponse> getBySection(String section) {
-        return pageRepo.findBySectionAndPublishedTrueOrderByDisplayOrderAsc(section)
+        return pageRepo.findPublishedBySection(section)
             .stream().map(this::toResponse).toList();
     }
 
@@ -44,7 +44,8 @@ public class CompanyPageService {
             .section(p.getSection())
             .title(p.getTitle())
             .bodyHtml(p.getBodyHtml())
-            .displayOrder(p.getDisplayOrder())
+            // Safe unboxing fallback just in case DB has nulls
+            .displayOrder(p.getDisplayOrder() != null ? p.getDisplayOrder() : 0)
             .build();
     }
 }
