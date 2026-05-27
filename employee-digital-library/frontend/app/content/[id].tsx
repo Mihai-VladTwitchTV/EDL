@@ -11,6 +11,7 @@ import { showMessage } from 'react-native-flash-message';
 import { contentApi, quizApi } from '../../src/api';
 import { BASE_URL } from '../../src/api';
 import { Colors, Spacing, Radius, FontSize } from '../../src/utils/theme';
+import YoutubeIframe from 'react-native-youtube-iframe'; // Add this import
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -60,6 +61,12 @@ const POST_TYPE_LABEL: Record<string, string> = {
   REGULATION: 'Regulation',
 };
 
+const getYouTubeID = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+};
+
 // ─── DOCUMENT / REGULATION VIEW ───────────────────────────────────────────────
 function DocumentView({ item }: { item: any }) {
   const bodyText = item.bodyHtml
@@ -74,38 +81,39 @@ function DocumentView({ item }: { item: any }) {
 }
 
 // ─── VIDEO VIEW ───────────────────────────────────────────────────────────────
-function VideoView({ item, onProgress }: { item: any; onProgress: (pct: number) => void }) {
-  const videoRef = useRef<Video>(null);
-
+// ─── VIDEO VIEW ───────────────────────────────────────────────────────────────
+function VideoView({ item }: { item: any }) {
   if (!item.videoUrl) {
     return (
       <View style={styles.videoWrap}>
         <View style={styles.videoPlaceholder}>
           <Ionicons name="play-circle" size={64} color={Colors.textMuted} />
           <Text style={styles.videoNote}>No video file attached to this item.</Text>
-          {item.description ? <Text style={styles.videoDesc}>{item.description}</Text> : null}
         </View>
       </View>
     );
   }
 
-  const uri = item.videoUrl.startsWith('http') ? item.videoUrl : `${BASE_URL}${item.videoUrl}`;
-
   return (
     <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-      <Video
-        ref={videoRef}
-        style={styles.videoPlayer}
-        source={{ uri }}
-        useNativeControls
-        resizeMode={ResizeMode.CONTAIN}
-        onPlaybackStatusUpdate={(status: any) => {
-          if (status.isLoaded && status.durationMillis && status.positionMillis) {
-            const pct = Math.round((status.positionMillis / status.durationMillis) * 100);
-            onProgress(pct);
-          }
-        }}
-      />
+      {/* This checks if it's a YouTube URL and renders accordingly */}
+      {getYouTubeID(item.videoUrl) ? (
+        <View style={styles.videoPlayer}>
+          <YoutubeIframe
+            height={250}
+            videoId={getYouTubeID(item.videoUrl)!}
+            play={true}
+          />
+        </View>
+      ) : (
+        <Video
+          source={{ uri: item.videoUrl.startsWith('http') ? item.videoUrl : `${BASE_URL}${item.videoUrl}` }}
+          style={styles.videoPlayer}
+          resizeMode={ResizeMode.CONTAIN}
+          useNativeControls
+        />
+      )}
+      
       {item.description ? (
         <>
           <Text style={[styles.subheading, { marginTop: Spacing.md }]}>About this Video</Text>
@@ -372,6 +380,7 @@ export default function ContentDetailScreen() {
     queryFn: () => contentApi.getById(id!).then(r => r.data),
     enabled: !!id,
   });
+  
 
   const acknowledgeMutation = useMutation({
     mutationFn: () => contentApi.acknowledge(id!),
