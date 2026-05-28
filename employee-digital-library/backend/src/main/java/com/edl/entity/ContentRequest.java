@@ -26,6 +26,7 @@ public class ContentRequest {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
+    @Builder.Default
     @Column(nullable = false, length = 30)
     private String status = "OPEN";
 
