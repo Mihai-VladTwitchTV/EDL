@@ -43,19 +43,17 @@ public interface ContentItemRepository extends JpaRepository<ContentItem, UUID> 
     // Uses native query to access PostgreSQL ts_rank and similarity
     // -------------------------------------------------------
     @Query(value = """
-        SELECT ci.* FROM content_items ci
+        SELECT DISTINCT ci.* FROM content_items ci
         LEFT JOIN content_departments cd ON cd.content_id = ci.id
         WHERE ci.status = 'PUBLISHED'
           AND (:deptId IS NULL OR cd.department_id = CAST(:deptId AS UUID) OR NOT EXISTS (
                 SELECT 1 FROM content_departments WHERE content_id = ci.id
               ))
           AND (
-                ci.search_vector @@ plainto_tsquery('romanian', :query)
-             OR similarity(ci.title, :query) > 0.2
+                ci.title       ILIKE '%' || :query || '%'
+             OR ci.description ILIKE '%' || :query || '%'
           )
-        ORDER BY
-            ts_rank(ci.search_vector, plainto_tsquery('romanian', :query)) DESC,
-            similarity(ci.title, :query) DESC
+        ORDER BY ci.title
         """,
         countQuery = """
         SELECT COUNT(DISTINCT ci.id) FROM content_items ci
@@ -65,8 +63,8 @@ public interface ContentItemRepository extends JpaRepository<ContentItem, UUID> 
                 SELECT 1 FROM content_departments WHERE content_id = ci.id
               ))
           AND (
-                ci.search_vector @@ plainto_tsquery('romanian', :query)
-             OR similarity(ci.title, :query) > 0.2
+                ci.title       ILIKE '%' || :query || '%'
+             OR ci.description ILIKE '%' || :query || '%'
           )
         """,
         nativeQuery = true)
@@ -149,7 +147,7 @@ public interface ContentItemRepository extends JpaRepository<ContentItem, UUID> 
 
     @Query(value = """
         SELECT
-            content_id::text    AS contentId,
+            CAST(content_id AS text) AS contentId,
             content_title       AS contentTitle,
             COUNT(*)            AS totalTargeted,
             SUM(CASE WHEN acknowledged = true THEN 1 ELSE 0 END) AS acknowledged,

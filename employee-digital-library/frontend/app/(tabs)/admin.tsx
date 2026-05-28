@@ -145,6 +145,7 @@ export default function AdminScreen() {
       {activeTab === 'review' && (
         pendingLoading ? <Centered /> : (
           <FlatList
+            style={{ flex: 1 }}
             data={pendingItems}
             keyExtractor={i => i.id}
             renderItem={({ item }) => (
@@ -172,6 +173,7 @@ export default function AdminScreen() {
       {activeTab === 'requests' && (
         requestsLoading ? <Centered /> : (
           <FlatList
+            style={{ flex: 1 }}
             data={openRequests}
             keyExtractor={i => i.id}
             renderItem={({ item }) => (
@@ -207,6 +209,7 @@ export default function AdminScreen() {
       {activeTab === 'compliance' && (
         complianceLoading ? <Centered /> : (
           <FlatList
+            style={{ flex: 1 }}
             data={complianceData ?? []}
             keyExtractor={(i: ComplianceRow) => i.contentId}
             refreshControl={<RefreshControl refreshing={complianceRefreshing} onRefresh={refetchCompliance} tintColor={Colors.primary} />}
@@ -256,6 +259,7 @@ export default function AdminScreen() {
       {activeTab === 'inbox' && (
         (feedbackLoading || ticketsLoading) ? <Centered /> : (
           <ScrollView
+            style={{ flex: 1 }}
             contentContainerStyle={{ paddingBottom: 100, paddingHorizontal: Spacing.md }}
             refreshControl={
               <RefreshControl

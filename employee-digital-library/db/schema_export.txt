@@ -1,0 +1,276 @@
+﻿=== TABLES ===
+      table_name       | column_count 
+-----------------------+--------------
+ categories            |            5
+ certifications        |            7
+ company_pages         |            8
+ content_departments   |            3
+ content_documents     |            4
+ content_items         |           24
+ content_ratings       |            6
+ content_requests      |            8
+ content_videos        |            6
+ departments           |            4
+ device_tokens         |            6
+ feedback              |            6
+ notifications         |            8
+ quiz_answers          |            5
+ quiz_attempts         |            6
+ quiz_questions        |            6
+ sections              |            5
+ support_tickets       |            9
+ user_certifications   |            5
+ user_content_progress |            9
+ users                 |           16
+ xp_events             |            6
+(22 rows)
+
+
+=== COLUMNS PER TABLE ===
+        table_name         |    column_name     |        data_type         | character_maximum_length | is_nullable |           column_default            
+---------------------------+--------------------+--------------------------+--------------------------+-------------+-------------------------------------
+ categories                | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ categories                | name               | character varying        |                      100 | NO          | 
+ categories                | icon_name          | character varying        |                       50 | YES         | 
+ categories                | color_hex          | character varying        |                        7 | YES         | '#6366F1'::character varying
+ categories                | created_at         | timestamp with time zone |                          | NO          | now()
+ certifications            | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ certifications            | name               | character varying        |                      200 | NO          | 
+ certifications            | description        | text                     |                          | YES         | 
+ certifications            | content_id         | uuid                     |                          | YES         | 
+ certifications            | pass_threshold     | smallint                 |                          | NO          | 70
+ certifications            | valid_days         | integer                  |                          | YES         | 
+ certifications            | created_at         | timestamp with time zone |                          | NO          | now()
+ company_pages             | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ company_pages             | slug               | character varying        |                      100 | NO          | 
+ company_pages             | section            | character varying        |                       50 | NO          | 
+ company_pages             | title              | character varying        |                      255 | NO          | 
+ company_pages             | body_html          | text                     |                          | YES         | 
+ company_pages             | display_order      | integer                  |                          | NO          | 0
+ company_pages             | is_published       | boolean                  |                          | NO          | false
+ company_pages             | updated_at         | timestamp with time zone |                          | NO          | now()
+ content_departments       | content_id         | uuid                     |                          | NO          | 
+ content_departments       | department_id      | uuid                     |                          | NO          | 
+ content_departments       | section_id         | uuid                     |                          | YES         | 
+ content_documents         | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ content_documents         | content_id         | uuid                     |                          | NO          | 
+ content_documents         | body_html          | text                     |                          | YES         | 
+ content_documents         | file_url           | character varying        |                      500 | YES         | 
+ content_items             | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ content_items             | title              | character varying        |                      255 | NO          | 
+ content_items             | description        | text                     |                          | YES         | 
+ content_items             | content_type       | USER-DEFINED             |                          | NO          | 
+ content_items             | status             | USER-DEFINED             |                          | NO          | 'DRAFT'::content_status
+ content_items             | is_mandatory       | boolean                  |                          | NO          | false
+ content_items             | language           | USER-DEFINED             |                          | NO          | 'RO'::language_code
+ content_items             | category_id        | uuid                     |                          | YES         | 
+ content_items             | author_id          | uuid                     |                          | NO          | 
+ content_items             | approved_by        | uuid                     |                          | YES         | 
+ content_items             | approved_at        | timestamp with time zone |                          | YES         | 
+ content_items             | version            | integer                  |                          | NO          | 1
+ content_items             | view_count         | integer                  |                          | NO          | 0
+ content_items             | thumbnail_url      | character varying        |                      500 | YES         | 
+ content_items             | search_vector      | tsvector                 |                          | YES         | 
+ content_items             | created_at         | timestamp with time zone |                          | NO          | now()
+ content_items             | updated_at         | timestamp with time zone |                          | NO          | now()
+ content_items             | post_type          | USER-DEFINED             |                          | NO          | 'TRAINING'::post_type
+ content_items             | event_date         | timestamp with time zone |                          | YES         | 
+ content_items             | event_location     | character varying        |                      255 | YES         | 
+ content_items             | job_department     | character varying        |                      100 | YES         | 
+ content_items             | job_location       | character varying        |                      100 | YES         | 
+ content_items             | application_url    | character varying        |                      500 | YES         | 
+ content_items             | linked_quiz_id     | uuid                     |                          | YES         | 
+ content_ratings           | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ content_ratings           | user_id            | uuid                     |                          | NO          | 
+ content_ratings           | content_id         | uuid                     |                          | NO          | 
+ content_ratings           | rating             | smallint                 |                          | NO          | 
+ content_ratings           | is_outdated        | boolean                  |                          | NO          | false
+ content_ratings           | rated_at           | timestamp with time zone |                          | NO          | now()
+ content_requests          | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ content_requests          | requester_id       | uuid                     |                          | NO          | 
+ content_requests          | search_term        | character varying        |                      255 | YES         | 
+ content_requests          | description        | text                     |                          | NO          | 
+ content_requests          | status             | character varying        |                       30 | NO          | 'OPEN'::character varying
+ content_requests          | resolved_by        | uuid                     |                          | YES         | 
+ content_requests          | resolved_at        | timestamp with time zone |                          | YES         | 
+ content_requests          | created_at         | timestamp with time zone |                          | NO          | now()
+ content_videos            | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ content_videos            | content_id         | uuid                     |                          | NO          | 
+ content_videos            | video_url          | character varying        |                      500 | NO          | 
+ content_videos            | duration_secs      | integer                  |                          | YES         | 
+ content_videos            | subtitle_url       | character varying        |                      500 | YES         | 
+ content_videos            | transcript_text    | text                     |                          | YES         | 
+ departments               | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ departments               | name               | character varying        |                      100 | NO          | 
+ departments               | description        | text                     |                          | YES         | 
+ departments               | created_at         | timestamp with time zone |                          | NO          | now()
+ device_tokens             | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ device_tokens             | user_id            | uuid                     |                          | NO          | 
+ device_tokens             | token              | character varying        |                      500 | NO          | 
+ device_tokens             | platform           | character varying        |                       10 | NO          | 'expo'::character varying
+ device_tokens             | created_at         | timestamp with time zone |                          | NO          | now()
+ device_tokens             | last_seen          | timestamp with time zone |                          | NO          | now()
+ feedback                  | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ feedback                  | user_id            | uuid                     |                          | NO          | 
+ feedback                  | category           | character varying        |                       50 | NO          | 
+ feedback                  | message            | text                     |                          | NO          | 
+ feedback                  | is_anonymous       | boolean                  |                          | NO          | false
+ feedback                  | created_at         | timestamp with time zone |                          | NO          | now()
+ mandatory_compliance_view | user_id            | uuid                     |                          | YES         | 
+ mandatory_compliance_view | full_name          | character varying        |                      150 | YES         | 
+ mandatory_compliance_view | email              | character varying        |                      255 | YES         | 
+ mandatory_compliance_view | department         | character varying        |                      100 | YES         | 
+ mandatory_compliance_view | content_id         | uuid                     |                          | YES         | 
+ mandatory_compliance_view | content_title      | character varying        |                      255 | YES         | 
+ mandatory_compliance_view | published_at       | timestamp with time zone |                          | YES         | 
+ mandatory_compliance_view | acknowledged       | boolean                  |                          | YES         | 
+ mandatory_compliance_view | acknowledged_at    | timestamp with time zone |                          | YES         | 
+ mandatory_compliance_view | completed          | boolean                  |                          | YES         | 
+ notifications             | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ notifications             | user_id            | uuid                     |                          | NO          | 
+ notifications             | type               | USER-DEFINED             |                          | NO          | 
+ notifications             | title              | character varying        |                      255 | NO          | 
+ notifications             | body               | text                     |                          | YES         | 
+ notifications             | content_id         | uuid                     |                          | YES         | 
+ notifications             | is_read            | boolean                  |                          | NO          | false
+ notifications             | created_at         | timestamp with time zone |                          | NO          | now()
+ quiz_answers              | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ quiz_answers              | question_id        | uuid                     |                          | NO          | 
+ quiz_answers              | answer_text        | text                     |                          | NO          | 
+ quiz_answers              | is_correct         | boolean                  |                          | NO          | false
+ quiz_answers              | position           | integer                  |                          | NO          | 0
+ quiz_attempts             | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ quiz_attempts             | user_id            | uuid                     |                          | NO          | 
+ quiz_attempts             | content_id         | uuid                     |                          | NO          | 
+ quiz_attempts             | score_pct          | smallint                 |                          | NO          | 
+ quiz_attempts             | passed             | boolean                  |                          | NO          | 
+ quiz_attempts             | attempted_at       | timestamp with time zone |                          | NO          | now()
+ quiz_questions            | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ quiz_questions            | content_id         | uuid                     |                          | NO          | 
+ quiz_questions            | question_text      | text                     |                          | NO          | 
+ quiz_questions            | question_type      | USER-DEFINED             |                          | NO          | 'SINGLE_CHOICE'::quiz_question_type
+ quiz_questions            | position           | integer                  |                          | NO          | 0
+ quiz_questions            | explanation        | text                     |                          | YES         | 
+ sections                  | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ sections                  | department_id      | uuid                     |                          | NO          | 
+ sections                  | name               | character varying        |                      100 | NO          | 
+ sections                  | description        | text                     |                          | YES         | 
+ sections                  | created_at         | timestamp with time zone |                          | NO          | now()
+ support_tickets           | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ support_tickets           | user_id            | uuid                     |                          | NO          | 
+ support_tickets           | ticket_type        | character varying        |                       20 | NO          | 
+ support_tickets           | subject            | character varying        |                      255 | NO          | 
+ support_tickets           | description        | text                     |                          | NO          | 
+ support_tickets           | status             | character varying        |                       20 | NO          | 'OPEN'::character varying
+ support_tickets           | assigned_to        | uuid                     |                          | YES         | 
+ support_tickets           | resolved_at        | timestamp with time zone |                          | YES         | 
+ support_tickets           | created_at         | timestamp with time zone |                          | NO          | now()
+ user_certifications       | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ user_certifications       | user_id            | uuid                     |                          | NO          | 
+ user_certifications       | certification_id   | uuid                     |                          | NO          | 
+ user_certifications       | issued_at          | timestamp with time zone |                          | NO          | now()
+ user_certifications       | expires_at         | timestamp with time zone |                          | YES         | 
+ user_content_progress     | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ user_content_progress     | user_id            | uuid                     |                          | NO          | 
+ user_content_progress     | content_id         | uuid                     |                          | NO          | 
+ user_content_progress     | acknowledged       | boolean                  |                          | NO          | false
+ user_content_progress     | acknowledged_at    | timestamp with time zone |                          | YES         | 
+ user_content_progress     | completed          | boolean                  |                          | NO          | false
+ user_content_progress     | completed_at       | timestamp with time zone |                          | YES         | 
+ user_content_progress     | progress_pct       | smallint                 |                          | YES         | 0
+ user_content_progress     | last_accessed_at   | timestamp with time zone |                          | NO          | now()
+ users                     | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ users                     | email              | character varying        |                      255 | NO          | 
+ users                     | password_hash      | character varying        |                      255 | NO          | 
+ users                     | full_name          | character varying        |                      150 | NO          | 
+ users                     | role               | USER-DEFINED             |                          | NO          | 'EMPLOYEE'::user_role
+ users                     | department_id      | uuid                     |                          | YES         | 
+ users                     | preferred_lang     | USER-DEFINED             |                          | NO          | 'RO'::language_code
+ users                     | is_active          | boolean                  |                          | NO          | true
+ users                     | avatar_url         | character varying        |                      500 | YES         | 
+ users                     | created_at         | timestamp with time zone |                          | NO          | now()
+ users                     | last_login_at      | timestamp with time zone |                          | YES         | 
+ users                     | section_id         | uuid                     |                          | YES         | 
+ users                     | xp_points          | integer                  |                          | NO          | 0
+ users                     | level              | integer                  |                          | NO          | 1
+ users                     | streak_days        | integer                  |                          | NO          | 0
+ users                     | streak_last_active | date                     |                          | YES         | 
+ xp_events                 | id                 | uuid                     |                          | NO          | uuid_generate_v4()
+ xp_events                 | user_id            | uuid                     |                          | NO          | 
+ xp_events                 | event_type         | character varying        |                       50 | NO          | 
+ xp_events                 | xp_awarded         | integer                  |                          | NO          | 
+ xp_events                 | content_id         | uuid                     |                          | YES         | 
+ xp_events                 | created_at         | timestamp with time zone |                          | NO          | now()
+(172 rows)
+
+
+=== ENUMS ===
+     enum_name      |         value          
+--------------------+------------------------
+ content_status     | DRAFT
+ content_status     | PENDING_REVIEW
+ content_status     | PUBLISHED
+ content_status     | ARCHIVED
+ content_type       | DOCUMENT
+ content_type       | VIDEO
+ content_type       | QUIZ
+ language_code      | RO
+ language_code      | EN
+ notification_type  | MANDATORY_CONTENT
+ notification_type  | NEW_CONTENT
+ notification_type  | CONTENT_REQUEST_UPDATE
+ notification_type  | REMINDER
+ notification_type  | SYSTEM
+ post_type          | TRAINING
+ post_type          | NEWS
+ post_type          | EVENT
+ post_type          | CHANGE
+ post_type          | CAREER
+ post_type          | REGULATION
+ quiz_question_type | SINGLE_CHOICE
+ quiz_question_type | MULTIPLE_CHOICE
+ quiz_question_type | TRUE_FALSE
+ user_role          | EMPLOYEE
+ user_role          | MASTER_MENTOR
+ user_role          | HR_ADMIN
+(26 rows)
+
+
+=== FOREIGN KEYS ===
+      table_name       |   column_name    | references_table | references_column 
+-----------------------+------------------+------------------+-------------------
+ certifications        | content_id       | content_items    | id
+ content_departments   | section_id       | sections         | id
+ content_departments   | content_id       | content_items    | id
+ content_departments   | department_id    | departments      | id
+ content_documents     | content_id       | content_items    | id
+ content_items         | category_id      | categories       | id
+ content_items         | author_id        | users            | id
+ content_items         | approved_by      | users            | id
+ content_items         | linked_quiz_id   | content_items    | id
+ content_ratings       | user_id          | users            | id
+ content_ratings       | content_id       | content_items    | id
+ content_requests      | requester_id     | users            | id
+ content_requests      | resolved_by      | users            | id
+ content_videos        | content_id       | content_items    | id
+ device_tokens         | user_id          | users            | id
+ feedback              | user_id          | users            | id
+ notifications         | user_id          | users            | id
+ notifications         | content_id       | content_items    | id
+ quiz_answers          | question_id      | quiz_questions   | id
+ quiz_attempts         | content_id       | content_items    | id
+ quiz_attempts         | user_id          | users            | id
+ quiz_questions        | content_id       | content_items    | id
+ sections              | department_id    | departments      | id
+ support_tickets       | user_id          | users            | id
+ support_tickets       | assigned_to      | users            | id
+ user_certifications   | user_id          | users            | id
+ user_certifications   | certification_id | certifications   | id
+ user_content_progress | content_id       | content_items    | id
+ user_content_progress | user_id          | users            | id
+ users                 | department_id    | departments      | id
+ users                 | section_id       | sections         | id
+ xp_events             | user_id          | users            | id
+ xp_events             | content_id       | content_items    | id
+(33 rows)
+

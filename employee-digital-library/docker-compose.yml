@@ -18,6 +18,7 @@ services:
       - ./db/003_posttype_seed.sql:/docker-entrypoint-initdb.d/04_posttype_seed.sql
       - ./db/004_company_pages_seed.sql:/docker-entrypoint-initdb.d/05_pages_seed.sql
       - ./db/006_real_data_seed.sql:/docker-entrypoint-initdb.d/06_real_data_seed.sql
+      - ./db/007_fix_compliance_view.sql:/docker-entrypoint-initdb.d/07_fix_compliance_view.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U edl_user -d employee_digital_library"]
       interval: 10s
